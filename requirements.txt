@@ -1,0 +1,17 @@
+
+streamlit>=1.36
+pytesseract
+opencv-python-headless
+numpy
+Pillow
+pandas
+pypdf
+PyMuPDF
+python-docx
+python-pptx
+openpyxl
+requests
+beautifulsoup4
+transformers
+torch
+reportlab
