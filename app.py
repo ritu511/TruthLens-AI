@@ -516,15 +516,16 @@ st.markdown(
     [data-testid="stSidebarCollapsedControl"] button svg,button[aria-label="Open sidebar"] svg,button[title="Open sidebar"] svg{display:block!important;width:21px!important;height:21px!important;color:#fff!important;stroke:#fff!important;opacity:1!important}
     [data-testid="stSidebarCollapsedControl"] button:hover,button[aria-label="Open sidebar"]:hover,button[title="Open sidebar"]:hover{background:#007f91!important;transform:translateY(-1px)}
 
-    [class*="st-key-avatar_photo_area"]{position:relative!important;width:100%!important;min-height:160px!important;display:flex!important;justify-content:center!important;align-items:center!important}
-    [class*="st-key-avatar_photo_area"] [data-testid="stImage"] img{width:150px!important;height:150px!important;object-fit:cover!important;border-radius:50%!important}
-    [class*="st-key-avatar_photo_area"] [data-testid="stFileUploader"]{position:absolute!important;top:4px!important;right:calc(50% - 86px)!important;width:38px!important;height:38px!important;z-index:5!important;overflow:visible!important}
-    [class*="st-key-avatar_photo_area"] [data-testid="stFileUploader"]>div{padding:0!important;min-height:0!important}
-    [class*="st-key-avatar_photo_area"] [data-testid="stFileUploader"] section{padding:0!important;min-height:0!important;height:38px!important;width:38px!important;border:0!important;background:transparent!important;overflow:visible!important}
-    [class*="st-key-avatar_photo_area"] [data-testid="stFileUploader"] [data-testid="stFileUploaderDropzone"]{padding:0!important;min-height:38px!important;height:38px!important;width:38px!important;border:0!important;background:transparent!important}
+    [class*="st-key-avatar_photo_area"]{width:100%!important;display:flex!important;flex-direction:column!important;align-items:center!important;gap:8px!important}
+    [class*="st-key-avatar_photo_area"] [data-testid="stImage"] img{width:150px!important;height:150px!important;object-fit:cover!important;border-radius:50%!important;border:3px solid #b9edf2!important}
+    .profile-edit-label{font-size:17px!important;font-weight:700!important;color:#00a85a!important;text-align:center!important;margin:4px 0 0!important}
+    [class*="st-key-avatar_photo_area"] [data-testid="stFileUploader"]{width:100%!important;max-width:190px!important;margin:0 auto!important}
+    [class*="st-key-avatar_photo_area"] [data-testid="stFileUploader"] section{padding:0!important;min-height:0!important;height:auto!important;width:100%!important;border:0!important;background:transparent!important;overflow:visible!important}
+    [class*="st-key-avatar_photo_area"] [data-testid="stFileUploader"] [data-testid="stFileUploaderDropzone"]{padding:0!important;min-height:0!important;height:auto!important;width:100%!important;border:0!important;background:transparent!important}
     [class*="st-key-avatar_photo_area"] [data-testid="stFileUploader"] [data-testid="stFileUploaderDropzone"]>div{display:none!important}
-    [class*="st-key-avatar_photo_area"] [data-testid="stFileUploader"] button{width:38px!important;height:38px!important;min-height:38px!important;padding:0!important;border-radius:50%!important;background:#007f91!important;color:#fff!important;border:2px solid #fff!important;box-shadow:0 2px 9px rgba(0,0,0,.2)!important;font-size:0!important}
-    [class*="st-key-avatar_photo_area"] [data-testid="stFileUploader"] button:after{content:"✎";font-size:21px!important;line-height:1!important;color:#fff!important}
+    [class*="st-key-avatar_photo_area"] [data-testid="stFileUploader"] button{width:100%!important;min-height:30px!important;padding:2px 8px!important;border:0!important;border-radius:0!important;background:transparent!important;color:#00a85a!important;box-shadow:none!important;font-size:13px!important;font-weight:600!important}
+    [class*="st-key-avatar_photo_area"] [data-testid="stFileUploader"] button *{color:#00a85a!important;-webkit-text-fill-color:#00a85a!important}
+    [class*="st-key-avatar_photo_area"] [data-testid="stFileUploader"] button:hover{background:rgba(0,168,90,.08)!important}
 </style>
     """,
     unsafe_allow_html=True,
@@ -578,6 +579,10 @@ if active_theme == "Dark":
     [data-baseweb="popover"] [role="listbox"],
     [data-baseweb="popover"] [role="option"]{background:#1b303b!important;color:#edf5f8!important;-webkit-text-fill-color:#edf5f8!important}
     [data-baseweb="select"] svg{fill:#dce8ed!important;color:#dce8ed!important}
+    [data-baseweb="popover"],[data-baseweb="menu"],[role="listbox"]{background:#1b303b!important;color:#edf5f8!important}
+    [data-baseweb="popover"] *,[data-baseweb="menu"] *,[role="listbox"] *,[role="option"]{background-color:#1b303b!important;color:#edf5f8!important;-webkit-text-fill-color:#edf5f8!important}
+    [role="option"]:hover,[aria-selected="true"]{background:#28505d!important;color:#fff!important;-webkit-text-fill-color:#fff!important}
+    [data-testid="stSelectbox"] [data-baseweb="select"]>div{background:#1b303b!important;color:#edf5f8!important}
     .stTextInput input::placeholder,.stTextArea textarea::placeholder,[data-baseweb="input"] input::placeholder,[data-baseweb="textarea"] textarea::placeholder{color:#8da6b1!important;-webkit-text-fill-color:#8da6b1!important}
     [data-testid="stDateInput"],[data-testid="stDateInput"]>div,[data-testid="stDateInput"] [data-baseweb="input"],[data-testid="stDateInput"] button{background:#0d1b24!important;color:#f0f6f8!important;border-color:#385563!important}
     .stButton>button,.stDownloadButton>button,.stLinkButton>a{background:#20343f!important;color:#edf5f8!important;border:1px solid #405b68!important}
@@ -589,6 +594,9 @@ if active_theme == "Dark":
     [data-testid="stAlert"] *,
     [data-testid="stAlert"] p,
     [data-testid="stAlert"] svg{color:#dcecf1!important;-webkit-text-fill-color:#dcecf1!important;fill:#dcecf1!important}
+    [data-testid="stAlert"]{background:#1a2a34!important;background-color:#1a2a34!important;border:1px solid #344c58!important;border-radius:10px!important;box-shadow:none!important}
+    [data-testid="stAlert"] *{background-color:transparent!important;color:#e0ebef!important;-webkit-text-fill-color:#e0ebef!important;opacity:1!important}
+    [data-testid="stAlert"] svg{fill:#9bb9c4!important;color:#9bb9c4!important}
     [data-testid="stAlert"] a{color:#70dce8!important;-webkit-text-fill-color:#70dce8!important}
     [data-testid="stFileUploader"] section{background:#10232d!important;border:1px dashed #416a79!important}
     [data-testid="stFileUploader"] *{color:#d5e5ea!important}
@@ -1376,8 +1384,17 @@ elif page == "Profile":
     with avatar_col:
         with st.container(border=True):
             with st.container(key="avatar_photo_area"):
+                if profile.get("avatar"):
+                    st.image(profile["avatar"], width=150)
+                else:
+                    initials = "".join(part[0] for part in full_name.split()[:2]).upper()
+                    st.markdown(
+                        f'<div class="profile-avatar-fallback">{html.escape(initials or "TL")}</div>',
+                        unsafe_allow_html=True,
+                    )
+                st.markdown('<div class="profile-edit-label">Edit photo</div>', unsafe_allow_html=True)
                 avatar_file = st.file_uploader(
-                    "Edit profile picture",
+                    "Choose a new profile photo",
                     type=["jpg", "jpeg", "png", "webp"],
                     accept_multiple_files=False,
                     key="profile_avatar_upload",
@@ -1386,18 +1403,10 @@ elif page == "Profile":
                 )
                 if avatar_file is not None:
                     st.image(avatar_file, width=150)
-                elif profile.get("avatar"):
-                    st.image(profile["avatar"], width=150)
-                else:
-                    initials = "".join(part[0] for part in full_name.split()[:2]).upper()
-                    st.markdown(
-                        f'<div class="profile-avatar-fallback">{html.escape(initials or "TL")}</div>',
-                        unsafe_allow_html=True,
-                    )
             st.markdown(f'<div class="profile-display-name">{html.escape(full_name)}</div>', unsafe_allow_html=True)
             st.markdown(f'<div class="profile-username">@{html.escape(username)}</div>', unsafe_allow_html=True)
             st.markdown('<div class="profile-status">● Account active</div>', unsafe_allow_html=True)
-            st.caption("Click the pencil on your photo to change it · Max 5 MB")
+            st.caption("JPG, JPEG, PNG or WEBP · Max 5 MB")
 
     with details_col:
         with st.form("profile_form", clear_on_submit=False):
