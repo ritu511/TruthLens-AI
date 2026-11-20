@@ -605,6 +605,58 @@ if active_theme == "Dark":
     .profile-status{color:#54dca0!important}
     hr{border-color:#2b4652!important}
     [data-testid="stSidebarCollapsedControl"] button,button[aria-label="Open sidebar"],button[title="Open sidebar"]{background:#08778a!important;border-color:#70dce7!important}
+    /* Dark-mode info notices: override Streamlit's default pale-blue alert surface. */
+    [data-testid="stMain"] [data-testid="stAlert"],
+    [data-testid="stMain"] [data-testid="stAlert"]>div,
+    [data-testid="stMain"] [data-testid="stAlert"] [data-testid="stMarkdownContainer"],
+    [data-testid="stMain"] [role="alert"],
+    [data-testid="stMain"] [role="alert"]>div{
+        background:#1b303b!important;
+        background-color:#1b303b!important;
+        border:1px solid #345563!important;
+        border-radius:10px!important;
+        color:#e6f0f4!important;
+        -webkit-text-fill-color:#e6f0f4!important;
+        box-shadow:none!important;
+        opacity:1!important;
+    }
+    [data-testid="stMain"] [data-testid="stAlert"] *,
+    [data-testid="stMain"] [role="alert"] *,
+    [data-testid="stMain"] [data-testid="stAlert"] p,
+    [data-testid="stMain"] [role="alert"] p{
+        background:transparent!important;
+        background-color:transparent!important;
+        color:#e6f0f4!important;
+        -webkit-text-fill-color:#e6f0f4!important;
+        opacity:1!important;
+    }
+    [data-testid="stMain"] [data-testid="stAlert"] svg,
+    [data-testid="stMain"] [role="alert"] svg{
+        color:#79cbd8!important;
+        fill:#79cbd8!important;
+    }
+    /* Sign-out is a secondary action, but must remain readable in dark mode. */
+    [data-testid="stSidebar"] div[data-testid="stButton"]>button,
+    [data-testid="stSidebar"] .stButton>button,
+    [data-testid="stSidebar"] button[kind="secondary"]{
+        background:#17323e!important;
+        background-color:#17323e!important;
+        color:#f1f7fa!important;
+        -webkit-text-fill-color:#f1f7fa!important;
+        border:1px solid #3c6878!important;
+        opacity:1!important;
+    }
+    [data-testid="stSidebar"] div[data-testid="stButton"]>button *,
+    [data-testid="stSidebar"] .stButton>button *,
+    [data-testid="stSidebar"] button[kind="secondary"] *{
+        color:#f1f7fa!important;
+        -webkit-text-fill-color:#f1f7fa!important;
+        opacity:1!important;
+    }
+    [data-testid="stSidebar"] div[data-testid="stButton"]>button:hover{
+        background:#214653!important;
+        border-color:#56bdcc!important;
+    }
     </style>
     """, unsafe_allow_html=True)
 
