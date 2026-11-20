@@ -496,6 +496,7 @@ st.markdown(
     .hero-kicker,.section-label{color:#008da3!important}.hero-title{color:#102b3a!important;-webkit-text-fill-color:#102b3a!important}.hero-copy{color:#557181!important}
     div[data-testid="stMetric"],div[data-testid="stVerticalBlockBorderWrapper"],div[data-testid="stForm"],div[data-testid="stExpander"]{background:#fff!important;border:1px solid #ccebf3!important;border-radius:12px!important;box-shadow:0 3px 12px rgba(0,103,125,.055)!important}
     div[data-testid="stMetricLabel"],div[data-testid="stMetricLabel"] *,div[data-testid="stMetricValue"],div[data-testid="stMetricValue"] *{color:#102b3a!important;-webkit-text-fill-color:#102b3a!important}
+    div[data-testid="stMetricValue"],div[data-testid="stMetricValue"] *{font-size:1.35rem!important;line-height:1.2!important}
     .stTextInput input,.stTextArea textarea,.stNumberInput input,[data-baseweb="input"] input,[data-baseweb="textarea"] textarea,[data-baseweb="select"]>div{background:#fbfeff!important;color:#102b3a!important;-webkit-text-fill-color:#102b3a!important;border:1px solid #a9d7e3!important;caret-color:#102b3a!important;border-radius:8px!important}
     .stTextInput input::placeholder,.stTextArea textarea::placeholder,[data-baseweb="input"] input::placeholder,[data-baseweb="textarea"] textarea::placeholder{color:#7795a2!important;-webkit-text-fill-color:#7795a2!important;opacity:1!important}
     [data-testid="stDateInput"],[data-testid="stDateInput"]>div,[data-testid="stDateInput"] [data-baseweb="input"],[data-testid="stDateInput"] input,[data-testid="stDateInput"] button{background:#fbfeff!important;color:#102b3a!important;-webkit-text-fill-color:#102b3a!important;border-color:#a9d7e3!important}
@@ -516,16 +517,9 @@ st.markdown(
     [data-testid="stSidebarCollapsedControl"] button svg,button[aria-label="Open sidebar"] svg,button[title="Open sidebar"] svg{display:block!important;width:21px!important;height:21px!important;color:#fff!important;stroke:#fff!important;opacity:1!important}
     [data-testid="stSidebarCollapsedControl"] button:hover,button[aria-label="Open sidebar"]:hover,button[title="Open sidebar"]:hover{background:#007f91!important;transform:translateY(-1px)}
 
-    [class*="st-key-avatar_photo_area"]{width:100%!important;display:flex!important;flex-direction:column!important;align-items:center!important;gap:8px!important}
-    [class*="st-key-avatar_photo_area"] [data-testid="stImage"] img{width:150px!important;height:150px!important;object-fit:cover!important;border-radius:50%!important;border:3px solid #b9edf2!important}
-    .profile-edit-label{font-size:17px!important;font-weight:700!important;color:#00a85a!important;text-align:center!important;margin:4px 0 0!important}
-    [class*="st-key-avatar_photo_area"] [data-testid="stFileUploader"]{width:100%!important;max-width:190px!important;margin:0 auto!important}
-    [class*="st-key-avatar_photo_area"] [data-testid="stFileUploader"] section{padding:0!important;min-height:0!important;height:auto!important;width:100%!important;border:0!important;background:transparent!important;overflow:visible!important}
-    [class*="st-key-avatar_photo_area"] [data-testid="stFileUploader"] [data-testid="stFileUploaderDropzone"]{padding:0!important;min-height:0!important;height:auto!important;width:100%!important;border:0!important;background:transparent!important}
-    [class*="st-key-avatar_photo_area"] [data-testid="stFileUploader"] [data-testid="stFileUploaderDropzone"]>div{display:none!important}
-    [class*="st-key-avatar_photo_area"] [data-testid="stFileUploader"] button{width:100%!important;min-height:30px!important;padding:2px 8px!important;border:0!important;border-radius:0!important;background:transparent!important;color:#00a85a!important;box-shadow:none!important;font-size:13px!important;font-weight:600!important}
-    [class*="st-key-avatar_photo_area"] [data-testid="stFileUploader"] button *{color:#00a85a!important;-webkit-text-fill-color:#00a85a!important}
-    [class*="st-key-avatar_photo_area"] [data-testid="stFileUploader"] button:hover{background:rgba(0,168,90,.08)!important}
+    .profile-display-name{font-size:1.15rem!important;font-weight:700!important;color:#102b3a!important}
+    .profile-username{font-size:.9rem!important;color:#557181!important}
+    .profile-status{font-size:.85rem!important;color:#00845a!important;font-weight:600!important}
 </style>
     """,
     unsafe_allow_html=True,
@@ -1422,7 +1416,7 @@ elif page == "Profile":
     username = st.session_state.authenticated_user["username"]
     st.markdown('<div class="section-label">MY ACCOUNT / PROFILE</div>', unsafe_allow_html=True)
     st.title("Profile")
-    st.caption("Keep your personal details and profile photo up to date.")
+    st.caption("Manage your personal details and account information.")
 
     full_name = " ".join(
         part for part in (
@@ -1431,36 +1425,22 @@ elif page == "Profile":
             profile.get("last_name", ""),
         ) if part
     ).strip() or username
-    avatar_col, details_col = st.columns([0.85, 2.15], gap="large")
 
-    with avatar_col:
-        with st.container(border=True):
-            with st.container(key="avatar_photo_area"):
-                if profile.get("avatar"):
-                    st.image(profile["avatar"], width=150)
-                else:
-                    initials = "".join(part[0] for part in full_name.split()[:2]).upper()
-                    st.markdown(
-                        f'<div class="profile-avatar-fallback">{html.escape(initials or "TL")}</div>',
-                        unsafe_allow_html=True,
-                    )
-                st.markdown('<div class="profile-edit-label">Edit photo</div>', unsafe_allow_html=True)
-                avatar_file = st.file_uploader(
-                    "Choose a new profile photo",
-                    type=["jpg", "jpeg", "png", "webp"],
-                    accept_multiple_files=False,
-                    key="profile_avatar_upload",
-                    label_visibility="collapsed",
-                    help="Choose a JPG, PNG or WEBP image up to 5 MB.",
-                )
-                if avatar_file is not None:
-                    st.image(avatar_file, width=150)
-            st.markdown(f'<div class="profile-display-name">{html.escape(full_name)}</div>', unsafe_allow_html=True)
-            st.markdown(f'<div class="profile-username">@{html.escape(username)}</div>', unsafe_allow_html=True)
-            st.markdown('<div class="profile-status">● Account active</div>', unsafe_allow_html=True)
-            st.caption("JPG, JPEG, PNG or WEBP · Max 5 MB")
+    with st.container(border=True):
+        st.markdown(
+            f'<div class="profile-display-name">{html.escape(full_name)}</div>',
+            unsafe_allow_html=True,
+        )
+        st.markdown(
+            f'<div class="profile-username">@{html.escape(username)}</div>',
+            unsafe_allow_html=True,
+        )
+        st.markdown(
+            '<div class="profile-status">● Account active</div>',
+            unsafe_allow_html=True,
+        )
+        st.divider()
 
-    with details_col:
         with st.form("profile_form", clear_on_submit=False):
             st.markdown("#### Personal information")
             first_name = st.text_input("First name", value=profile.get("first_name", ""), placeholder="Enter first name")
@@ -1485,17 +1465,7 @@ elif page == "Profile":
             save_profile = st.form_submit_button("Save changes", type="primary", use_container_width=True)
 
         if save_profile:
-            avatar_bytes = None
             try:
-                if avatar_file is not None:
-                    avatar_bytes = avatar_file.getvalue()
-                    if len(avatar_bytes) > 5 * 1024 * 1024:
-                        raise ValueError("Profile picture must be 5 MB or smaller.")
-                    image_check = Image.open(BytesIO(avatar_bytes))
-                    image_check.verify()
-                    if image_check.format not in ("JPEG", "PNG", "WEBP"):
-                        raise ValueError("Please upload a JPG, PNG or WEBP image.")
-
                 save_user_profile(
                     st.session_state.authenticated_user["id"],
                     " ".join(part for part in (first_name, middle_name, last_name) if part),
@@ -1510,7 +1480,6 @@ elif page == "Profile":
                     last_name=last_name,
                     phone=phone,
                     date_of_birth=dob.isoformat() if dob else "",
-                    avatar=avatar_bytes,
                 )
                 st.success("Your profile has been updated.")
                 st.rerun()
@@ -1522,7 +1491,6 @@ elif page == "Profile":
     info1.metric("Username", username)
     info2.metric("Account ID", str(st.session_state.authenticated_user["id"]))
     st.caption("Your login username cannot be changed from this page. Your password is never displayed.")
-
 
 # SETTINGS
 # -----------------------------------------------------------------------------
