@@ -102,21 +102,34 @@ if st.session_state.authenticated_user is None:
     .auth-heading span,.auth-right h2 span{color:#7138f4}
     .auth-copy{color:#667085;font-size:16px;line-height:1.6;margin-bottom:26px}
     .auth-right{background:radial-gradient(circle at 100% 0%,#e3d7ff 0,transparent 30%),linear-gradient(145deg,#f8f5ff,#f0eaff);border-radius:24px;padding:clamp(32px,5vw,76px);min-height:700px}
-    .auth-right h2{font-size:clamp(38px,4vw,58px);line-height:1.08;letter-spacing:-2px;color:#11152b;font-weight:800;margin:25px 0 18px}
-    .auth-right p{font-size:18px;color:#5d6680;line-height:1.6}
-    .auth-visual{margin:45px auto 30px;max-width:560px;border:1px solid #ded3ff;background:rgba(255,255,255,.8);border-radius:22px;padding:28px;box-shadow:0 24px 70px rgba(92,57,180,.12)}
-    .visual-top{font-weight:750;font-size:20px;color:#171b32;border-bottom:1px solid #e9e3f8;padding-bottom:16px}
-    .visual-row{display:flex;gap:16px;align-items:center;padding:22px 0}
-    .visual-thumb{width:104px;height:78px;border-radius:12px;background:linear-gradient(135deg,#d8c5ff,#8c56f5);display:grid;place-items:center;color:white;font-size:30px}
-    .visual-lines{flex:1}.visual-lines i{display:block;height:10px;border-radius:8px;background:#e5e0f2;margin:10px 0}
-    .verified{display:inline-block;padding:9px 15px;border-radius:9px;background:#dcfce9;color:#07864a;font-weight:700}
-    .auth-features{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:30px}
-    .auth-feature strong{display:block;color:#171b32;margin:8px 0 5px;font-size:14px}
-    .auth-feature small{color:#65708a;line-height:1.5}
+    .auth-right h2{font-size:clamp(38px,4vw,58px);line-height:1.08;letter-spacing:-2px;color:#11152b!important;font-weight:800;margin:25px 0 18px}
+    .auth-right h2 span{color:#7138f4!important}
+    .auth-right p{font-size:18px;color:#4f5872!important;line-height:1.65}
+    .auth-visual{margin:38px auto 28px;max-width:560px;border:1px solid #d9cdfb;background:#fff;border-radius:22px;padding:26px;box-shadow:0 24px 70px rgba(92,57,180,.13)}
+    .visual-top{font-weight:800;font-size:19px;color:#171b32!important;border-bottom:1px solid #ece7f7;padding-bottom:15px}
+    .visual-row{display:flex;gap:16px;align-items:center;padding:20px 0 16px}
+    .visual-thumb{width:92px;height:78px;flex:0 0 92px;border-radius:12px;background:linear-gradient(135deg,#d8c5ff,#8c56f5);display:grid;place-items:center;color:white;font-size:30px}
+    .visual-lines{flex:1;min-width:0}.visual-lines strong{display:block;color:#20243a;font-size:14px;margin-bottom:8px}.visual-lines span{display:block;color:#65708a;font-size:12px;line-height:1.5}.visual-lines i{display:block;height:8px;border-radius:8px;background:#e5e0f2;margin:8px 0}
+    .visual-meta{display:flex;flex-wrap:wrap;gap:8px;margin:4px 0 14px}.visual-tag{font-size:11px;font-weight:700;padding:6px 9px;border-radius:7px;background:#f1ebff;color:#6330d9}
+    .verified{display:inline-block;padding:9px 13px;border-radius:9px;background:#dcfce9;color:#087b45!important;font-weight:750;font-size:13px}
+    .auth-features{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:28px}
+    .auth-feature strong{display:block;color:#171b32!important;margin:8px 0 5px;font-size:14px}
+    .auth-feature small{color:#4f5872!important;line-height:1.5;font-size:12px}
     .auth-icon{width:42px;height:42px;border-radius:12px;background:#e8ddff;color:#7138f4;display:grid;place-items:center;font-weight:800;font-size:18px}
-    .stTextInput input{border:1px solid #d7dbea!important;border-radius:11px!important;min-height:48px!important;background:white!important}
-    .stTextInput label{font-weight:650!important;color:#11152b!important}
-    .stButton>button[kind="primary"],.stFormSubmitButton>button[kind="primary"]{background:linear-gradient(100deg,#7138f4,#6330e8)!important;border:0!important;border-radius:11px!important;min-height:52px!important;font-weight:700!important}
+    /* Explicit contrast for Streamlit widgets: do not rely on the host theme. */
+    div[data-testid="stRadio"] label,div[data-testid="stRadio"] label p,
+    div[data-testid="stCheckbox"] label,div[data-testid="stCheckbox"] label p,
+    div[data-testid="stWidgetLabel"] p{color:#171b32!important;opacity:1!important;font-weight:600!important}
+    div[data-testid="stRadio"] [role="radiogroup"]{gap:22px}
+    div[data-testid="stRadio"] input,div[data-testid="stCheckbox"] input{accent-color:#7138f4!important}
+    .stTextInput label{font-weight:700!important;color:#171b32!important;opacity:1!important}
+    .stTextInput input{border:1px solid #d7dbea!important;border-radius:11px!important;min-height:48px!important;background:#fff!important;color:#171b32!important;-webkit-text-fill-color:#171b32!important}
+    .stTextInput input::placeholder{color:#737b91!important;-webkit-text-fill-color:#737b91!important;opacity:1!important}
+    .stTextInput [data-baseweb="input"]{background:#fff!important;border-radius:11px!important}
+    div[data-testid="stForm"]{border:1px solid #e2dcf0!important;border-radius:16px!important;background:rgba(255,255,255,.72)!important;padding:18px!important}
+    div[data-testid="stFormSubmitButton"] button{background:linear-gradient(100deg,#7138f4,#6330e8)!important;color:#fff!important;border:0!important;border-radius:11px!important;min-height:52px!important;font-weight:750!important;box-shadow:0 8px 18px rgba(99,48,232,.18)!important}
+    div[data-testid="stFormSubmitButton"] button:hover{background:linear-gradient(100deg,#6028e8,#5120d0)!important;color:#fff!important}
+    div[data-testid="stFormSubmitButton"] button p{color:#fff!important}
     div[data-testid="stTabs"] button{font-weight:650!important}
     @media(max-width:900px){.block-container{padding:1rem!important}.auth-right{display:none}.auth-brand{margin:12px 0 38px}}
     </style>
@@ -158,7 +171,19 @@ if st.session_state.authenticated_user is None:
         <div class="auth-right">
           <h2>Discover the <span>Truth</span><br>Behind Every Story.</h2>
           <p>AI-powered content investigation to inspect claims, analyze source credibility, and organize reliable evidence.</p>
-          <div class="auth-visual"><div class="visual-top">News Analysis</div><div class="visual-row"><div class="visual-thumb">▧</div><div class="visual-lines"><i></i><i></i><i style="width:72%"></i></div></div><span class="verified">✓ Evidence reviewed</span></div>
+          <div class="auth-visual">
+            <div class="visual-top">News Analysis</div>
+            <div class="visual-row">
+              <div class="visual-thumb">▧</div>
+              <div class="visual-lines">
+                <strong>Sample news article</strong>
+                <span>Review the headline, claim and supporting source details.</span>
+                <i></i><i style="width:76%"></i>
+              </div>
+            </div>
+            <div class="visual-meta"><span class="visual-tag">Claim detected</span><span class="visual-tag">Source check</span></div>
+            <span class="verified">✓ Evidence review ready</span>
+          </div>
           <div class="auth-features"><div class="auth-feature"><div class="auth-icon">AI</div><strong>AI Detection</strong><small>Inspect content and image indicators.</small></div><div class="auth-feature"><div class="auth-icon">✓</div><strong>Source Analysis</strong><small>Review evidence and source details.</small></div><div class="auth-feature"><div class="auth-icon">▥</div><strong>History</strong><small>Keep track of your investigations.</small></div></div>
         </div>
         """, unsafe_allow_html=True)
