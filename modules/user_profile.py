@@ -55,12 +55,13 @@ def save_user_profile(
     email_updates=True, investigation_updates=False, first_name="",
     middle_name="", last_name="", phone="", date_of_birth="", avatar=None
 ):
+    legacy_display_name = (display_name or "").strip()[:180]
     first_name = (first_name or "").strip()[:60]
     middle_name = (middle_name or "").strip()[:60]
     last_name = (last_name or "").strip()[:60]
     display_name = " ".join(part for part in (first_name, middle_name, last_name) if part)
     if not display_name:
-        display_name = (display_name or "").strip()[:180]
+        display_name = legacy_display_name
     email = (email or "").strip()[:160]
     bio = (bio or "").strip()[:500]
     phone = (phone or "").strip()[:25]
