@@ -172,6 +172,38 @@ if st.session_state.authenticated_user is None:
     .profile-display-name{color:#102b3a!important}.profile-username{color:#557181!important}.profile-status{color:#00845a!important}
     .hero{border-bottom-color:#ccebf3!important}.hero-title{color:#102b3a!important;-webkit-text-fill-color:#102b3a!important}
     hr{border-color:#ccebf3!important}
+
+    /* Aqua sidebar plus round profile-style collapsed launcher */
+    [data-testid="stSidebar"],[data-testid="stSidebar"]>div,
+    [data-testid="stSidebar"]>div:first-child,
+    [data-testid="stSidebar"] [data-testid="stSidebarContent"]{
+        background:#006477!important;border-right:1px solid #008da3!important;
+    }
+    [data-testid="stSidebar"] *{color:#effcff!important}
+    [data-testid="stSidebar"] [data-testid="stCaptionContainer"]{color:#b8edf4!important}
+    [data-testid="stSidebar"] [role="radio"][aria-checked="true"]{
+        background:#00aabd!important;color:#fff!important;box-shadow:inset 3px 0 0 #b8f7fb!important;
+    }
+    [data-testid="stSidebar"] [role="radio"]:hover{background:#087f91!important}
+    [data-testid="stSidebar"] button{background:#008da3!important;color:#fff!important;border-color:#4bd5e2!important}
+    button[aria-label="Open sidebar"],button[title="Open sidebar"],
+    [data-testid="stSidebarCollapsedControl"] button{
+        width:42px!important;height:42px!important;min-width:42px!important;
+        border-radius:50%!important;background:#00aabd!important;
+        border:2px solid #b8edf4!important;box-shadow:0 3px 12px rgba(0,103,125,.22)!important;
+        display:flex!important;align-items:center!important;justify-content:center!important;
+        padding:0!important;overflow:hidden!important;
+    }
+    button[aria-label="Open sidebar"] svg,button[title="Open sidebar"] svg,
+    [data-testid="stSidebarCollapsedControl"] button svg{display:none!important}
+    button[aria-label="Open sidebar"]::after,button[title="Open sidebar"]::after,
+    [data-testid="stSidebarCollapsedControl"] button::after{
+        content:"";display:block;width:21px;height:21px;background:#fff;
+        -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='8' r='4'/%3E%3Cpath d='M4 21a8 8 0 0 1 16 0'/%3E%3C/svg%3E") center/contain no-repeat;
+        mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='8' r='4'/%3E%3Cpath d='M4 21a8 8 0 0 1 16 0'/%3E%3C/svg%3E") center/contain no-repeat;
+    }
+    button[aria-label="Open sidebar"]:hover,button[title="Open sidebar"]:hover,
+    [data-testid="stSidebarCollapsedControl"] button:hover{background:#007f91!important;transform:translateY(-1px)}
 </style>
     """, unsafe_allow_html=True)
     left, right = st.columns([0.9, 1.1], gap="large")
