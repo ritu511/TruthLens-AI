@@ -423,6 +423,29 @@ st.markdown(
 )
 
 
+# Apply the saved appearance preference throughout the authenticated workspace.
+active_profile = get_user_profile(st.session_state.authenticated_user["id"])
+if active_profile.get("theme") == "Dark":
+    st.markdown("""
+    <style>
+    .stApp,[data-testid="stAppViewContainer"],[data-testid="stHeader"]{background:#111318!important;color:#e8eaf0!important}
+    [data-testid="stSidebar"]{background:#171a21!important;border-right:1px solid #292e39!important}
+    [data-testid="stSidebar"] *{color:#e5e7eb!important}
+    h1,h2,h3,h4,[data-testid="stMarkdownContainer"] p,[data-testid="stMarkdownContainer"] li,
+    [data-testid="stCaptionContainer"],[data-testid="stWidgetLabel"] p{color:#e5e7eb!important}
+    div[data-testid="stMetric"],div[data-testid="stExpander"],div[data-testid="stForm"],
+    div[data-testid="stVerticalBlockBorderWrapper"]{background:#191d25!important;border-color:#303746!important}
+    div[data-testid="stMetricLabel"],div[data-testid="stMetricValue"],div[data-testid="stMetricValue"] *,
+    div[data-testid="stExpander"] summary,div[data-testid="stExpander"] summary p{color:#e5e7eb!important}
+    .stTextInput input,.stTextArea textarea,[data-baseweb="input"] input,[data-baseweb="textarea"] textarea,
+    [data-baseweb="select"]{background:#202530!important;color:#f3f4f6!important;border-color:#3b4352!important}
+    .stTextInput label,.stTextArea label{color:#e5e7eb!important}
+    .stButton>button:not([kind="primary"]),.stDownloadButton>button{background:#202530!important;color:#e5e7eb!important;border-color:#3b4352!important}
+    [data-testid="stDataFrame"]{border-color:#303746!important}
+    hr{border-color:#303746!important}
+    </style>
+    """, unsafe_allow_html=True)
+
 # -----------------------------------------------------------------------------
 # SIDEBAR NAVIGATION
 # -----------------------------------------------------------------------------
