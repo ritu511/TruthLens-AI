@@ -1,8 +1,9 @@
 
 import io
+import sys
 from functools import lru_cache
 
-import torch
+from huggingface_hub import snapshot_download
 
 from PIL import (
     Image,
@@ -15,7 +16,9 @@ from PIL import (
 )
 
 
-MODEL_NAME = "aaronkantrowitz/ai-human-generated-image-detection"
+MODEL_NAME = "abacusai/Smaug-AI-Image-Detector"
+DISPLAY_MODEL_NAME = "TruthLens AI Image Detector"
+MODEL_PROVIDER = "Smaug-AI-Image-Detector by Abacus.AI"
 
 
 def extract_image_metadata(image):
@@ -108,79 +111,54 @@ def generate_ela(image, quality=90):
 
 @lru_cache(maxsize=1)
 def load_ai_classifier():
-    """Load and cache the Hugging Face image classifier."""
-
-    from transformers import pipeline
-
-    if torch.backends.mps.is_available():
-        device = torch.device("mps")
-    elif torch.cuda.is_available():
-        device = torch.device("cuda")
-    else:
-        device = torch.device("cpu")
-
-    return pipeline(
-        "image-classification",
-        model=MODEL_NAME,
-        device=device
+    """Download once and cache the Smaug image detector."""
+    model_path = snapshot_download(
+        repo_id=MODEL_NAME,
+        allow_patterns=[
+            "modules.json",
+            "config.json",
+            "config_sentence_transformers.json",
+            "sentence_bert_config.json",
+            "processor_config.json",
+            "model.safetensors",
+            "1_Pooling/*",
+            "2_Normalize/*",
+            "3_Dense/*",
+            "smaug_image_detect.py",
+            "tokenizer.json",
+            "tokenizer_config.json",
+            "chat_template.jinja",
+        ],
     )
+    if model_path not in sys.path:
+        sys.path.insert(0, model_path)
+
+    from smaug_image_detect import SmaugImageDetect
+
+    return SmaugImageDetect.from_pretrained(model_path)
 
 
 def detect_ai_image(image):
     """
-    Run experimental AI-image classification.
+    Estimate AI-generation likelihood with the Smaug detector.
 
-    Model predictions are indicators, not proof of image origin.
+    This is a model score, not proof of image origin.
     """
-
     try:
         classifier = load_ai_classifier()
+        raw_score = classifier(image.convert("RGB"))
+        if hasattr(raw_score, "item"):
+            raw_score = raw_score.item()
+        ai_score = float(raw_score)
 
-        predictions = classifier(
-            image.convert("RGB")
-        )
+        if not 0.0 <= ai_score <= 1.0:
+            raise ValueError("The image detector returned an invalid score.")
 
-        if not isinstance(predictions, list):
-            raise ValueError("Unexpected model output.")
-
-        ai_score = 0.0
-        human_score = 0.0
-        ai_label_found = False
-        human_label_found = False
-
-        for item in predictions:
-
-            label = str(item.get("label", "")).lower()
-            score = float(item.get("score", 0.0))
-
-            if not 0 <= score <= 1:
-                continue
-
-            if any(word in label for word in (
-                "ai", "artificial", "fake", "synthetic", "generated"
-            )):
-                ai_score += score
-                ai_label_found = True
-
-            elif any(word in label for word in (
-                "human", "real", "natural", "photograph"
-            )):
-                human_score += score
-                human_label_found = True
-
-        if not ai_label_found or not human_label_found:
-            return {
-                "available": False,
-                "error": (
-                    "The model labels could not be reliably mapped "
-                    "to both AI-generated and human-generated classes."
-                )
-            }
-
+        human_score = 1.0 - ai_score
         prediction = (
-            "AI-generated indicators detected"
-            if ai_score > human_score
-            else "Human-generated indicators detected"
+            "Likely AI-generated"
+            if ai_score >= 0.5
+            else "Likely human-created"
         )
 
         return {
@@ -188,19 +166,23 @@ def detect_ai_image(image):
             "prediction": prediction,
             "ai_score": round(ai_score * 100, 2),
             "human_score": round(human_score * 100, 2),
-            "model": MODEL_NAME,
+            "model": DISPLAY_MODEL_NAME,
+            "engine": MODEL_PROVIDER,
             "warning": (
-                "Experimental model prediction only. "
-                "It does not prove whether an image is AI-generated "
-                "or human-created. Results may be incorrect, "
-                "especially for edited or compressed images."
-            )
+                "This is a probabilistic model estimate, not proof of image origin. "
+                "Edited, compressed, cropped or newly generated images may be "
+                "misclassified. Review the image and other evidence before drawing "
+                "a conclusion."
+            ),
         }
 
     except Exception as error:
         return {
             "available": False,
-            "error": str(error)
+            "error": (
+                "TruthLens AI image detector could not start or analyze this image: "
+                + str(error)
+            ),
         }
 
 
@@ -249,8 +231,8 @@ def analyze_image(image_bytes):
             )
 
         warnings.append(
-            "AI detection is experimental and cannot prove "
-            "whether an image is AI-generated."
+            "TruthLens AI image detection is a probabilistic indicator, "
+            "not proof of image origin."
         )
 
         warnings.append(
