@@ -132,7 +132,47 @@ if st.session_state.authenticated_user is None:
     div[data-testid="stFormSubmitButton"] button p{color:#fff!important}
     div[data-testid="stTabs"] button{font-weight:650!important}
     @media(max-width:900px){.block-container{padding:1rem!important}.auth-right{display:none}.auth-brand{margin:12px 0 38px}}
-    </style>
+    /* AQUA BLUE — always-on theme overrides, including Streamlit's nested widgets */
+    :root{color-scheme:light;--tl-bg:#eaf8fc;--tl-surface:#fff;--tl-ink:#102b3a;--tl-muted:#557181;--tl-border:#ccebf3;--tl-indigo:#00aabd}
+    html,body,.stApp,[data-testid="stAppViewContainer"],[data-testid="stMain"],[data-testid="stMainBlockContainer"],section.main{background:#eaf8fc!important;color:#102b3a!important}
+    [data-testid="stHeader"]{background:#eaf8fc!important}
+    [data-testid="stSidebar"],[data-testid="stSidebar"]>div,[data-testid="stSidebar"]>div:first-child,[data-testid="stSidebar"] [data-testid="stSidebarContent"]{background:#003b49!important;border-right:1px solid #075568!important}
+    [data-testid="stSidebar"] *{color:#e8fbff!important}
+    [data-testid="stSidebar"] [data-testid="stCaptionContainer"]{color:#a9dce7!important}
+    [data-testid="stSidebar"] hr{border-color:#176477!important}
+    [data-testid="stSidebar"] [role="radio"]{color:#e8fbff!important;background:transparent!important;border-radius:9px!important}
+    [data-testid="stSidebar"] [role="radio"]:hover{background:#075568!important}
+    [data-testid="stSidebar"] [role="radio"][aria-checked="true"]{background:#007f91!important;color:#fff!important;box-shadow:inset 3px 0 0 #55e6f2!important;font-weight:700!important}
+    [data-testid="stSidebar"] [role="radio"]>div:first-child{border:2px solid #8bdce8!important;background:#064858!important}
+    [data-testid="stSidebar"] [role="radio"][aria-checked="true"]>div:first-child{border-color:#b8f7fb!important;background:#00bfd2!important}
+    [data-testid="stSidebar"] button{background:#075568!important;color:#fff!important;border:1px solid #27899a!important}
+    h1,h2,h3,h4,h5,[data-testid="stMarkdownContainer"] h1,[data-testid="stMarkdownContainer"] h2,[data-testid="stMarkdownContainer"] h3{color:#102b3a!important;-webkit-text-fill-color:#102b3a!important}
+    p,label,.stMarkdown,[data-testid="stMarkdownContainer"] p,[data-testid="stMarkdownContainer"] li,[data-testid="stWidgetLabel"] p{color:#294b5a!important}
+    [data-testid="stCaptionContainer"],.hero-copy,.footer-note{color:#557181!important}
+    .section-label,.hero-kicker{color:#008da3!important}
+    div[data-testid="stMetric"],div[data-testid="stVerticalBlockBorderWrapper"],div[data-testid="stForm"],div[data-testid="stExpander"]{background:#fff!important;border:1px solid #ccebf3!important;border-radius:12px!important;box-shadow:0 3px 12px rgba(0,103,125,.055)!important}
+    div[data-testid="stMetricLabel"],div[data-testid="stMetricLabel"] *,div[data-testid="stMetricValue"],div[data-testid="stMetricValue"] *{color:#102b3a!important;-webkit-text-fill-color:#102b3a!important}
+    .stTextInput input,.stTextArea textarea,[data-baseweb="input"] input,[data-baseweb="textarea"] textarea,[data-baseweb="select"]>div{background:#fbfeff!important;color:#102b3a!important;-webkit-text-fill-color:#102b3a!important;border:1px solid #a9d7e3!important;caret-color:#102b3a!important;border-radius:8px!important}
+    .stTextInput input::placeholder,.stTextArea textarea::placeholder,[data-baseweb="input"] input::placeholder{color:#7795a2!important;-webkit-text-fill-color:#7795a2!important;opacity:1!important}
+    [data-testid="stDateInput"],[data-testid="stDateInput"]>div,[data-testid="stDateInput"] [data-baseweb="input"],[data-testid="stDateInput"] input,[data-testid="stDateInput"] button{background:#fbfeff!important;color:#102b3a!important;-webkit-text-fill-color:#102b3a!important;border-color:#a9d7e3!important}
+    [data-testid="stDateInput"] input{border-radius:8px!important;min-height:42px!important}
+    [data-testid="stDateInput"] svg{color:#007f91!important;fill:#007f91!important}
+    .stButton>button,.stDownloadButton>button,.stLinkButton>a{background:#fff!important;color:#124252!important;border:1px solid #b8dce5!important;border-radius:8px!important}
+    div[data-testid="stFormSubmitButton"] button,.stFormSubmitButton button,div[data-testid="stForm"] button[kind="primary"]{background:#007f91!important;color:#fff!important;-webkit-text-fill-color:#fff!important;border:1px solid #007f91!important;border-radius:9px!important;font-weight:700!important}
+    div[data-testid="stFormSubmitButton"] button *, .stFormSubmitButton button *{color:#fff!important;-webkit-text-fill-color:#fff!important}
+    div[data-testid="stFormSubmitButton"] button:hover,.stFormSubmitButton button:hover{background:#006b7b!important;border-color:#006b7b!important}
+    .stButton>button[kind="primary"]{background:#007f91!important;color:#fff!important;border-color:#007f91!important}
+    .stButton>button[kind="primary"] *{color:#fff!important;-webkit-text-fill-color:#fff!important}
+    [data-testid="stAlert"]{background:#e0f7fb!important;border:1px solid #a9e4ed!important}
+    [data-testid="stAlert"] *{color:#075568!important;-webkit-text-fill-color:#075568!important}
+    [data-testid="stFileUploader"] section{background:#f7fdff!important;border:1px dashed #82cbd9!important;border-radius:10px!important}
+    [data-testid="stFileUploader"] *{color:#294b5a!important}
+    [data-testid="stImage"] img{border-radius:50%!important;object-fit:cover!important;border:3px solid #bcecf3!important}
+    .profile-avatar-fallback{background:linear-gradient(145deg,#b9f3f8,#65d9e6)!important;border:2px solid #48c6d5!important;color:#00566a!important}
+    .profile-display-name{color:#102b3a!important}.profile-username{color:#557181!important}.profile-status{color:#00845a!important}
+    .hero{border-bottom-color:#ccebf3!important}.hero-title{color:#102b3a!important;-webkit-text-fill-color:#102b3a!important}
+    hr{border-color:#ccebf3!important}
+</style>
     """, unsafe_allow_html=True)
     left, right = st.columns([0.9, 1.1], gap="large")
     with left:
@@ -481,75 +521,6 @@ st.markdown(
 )
 
 
-# Apply the saved appearance preference throughout the authenticated workspace.
-active_profile = get_user_profile(st.session_state.authenticated_user["id"])
-if active_profile.get("theme") == "Dark":
-    st.markdown("""
-    <style>
-    .stApp,[data-testid="stAppViewContainer"],[data-testid="stHeader"]{background:#111318!important;color:#e8eaf0!important}
-    [data-testid="stSidebar"]{background:#171a21!important;border-right:1px solid #292e39!important}
-    [data-testid="stSidebar"] *{color:#e5e7eb!important}
-    h1,h2,h3,h4,[data-testid="stMarkdownContainer"] p,[data-testid="stMarkdownContainer"] li,
-    [data-testid="stCaptionContainer"],[data-testid="stWidgetLabel"] p{color:#e5e7eb!important}
-    div[data-testid="stMetric"],div[data-testid="stExpander"],div[data-testid="stForm"],
-    div[data-testid="stVerticalBlockBorderWrapper"]{background:#191d25!important;border-color:#303746!important}
-    div[data-testid="stMetricLabel"],div[data-testid="stMetricValue"],div[data-testid="stMetricValue"] *,
-    div[data-testid="stExpander"] summary,div[data-testid="stExpander"] summary p{color:#e5e7eb!important}
-    .stTextInput input,.stTextArea textarea,[data-baseweb="input"] input,[data-baseweb="textarea"] textarea,
-    [data-baseweb="select"]{background:#202530!important;color:#f3f4f6!important;border-color:#3b4352!important}
-    .stTextInput label,.stTextArea label{color:#e5e7eb!important}
-    .stButton>button:not([kind="primary"]),.stDownloadButton>button{background:#202530!important;color:#e5e7eb!important;border-color:#3b4352!important}
-    [data-testid="stDataFrame"]{border-color:#303746!important}
-    hr{border-color:#303746!important}
-    /* AQUA BLUE THEME — based on the selected reference palette */
-    :root { --tl-bg:#eaf8fc; --tl-surface:#ffffff; --tl-ink:#102b3a; --tl-muted:#557181; --tl-border:#ccebf3; --tl-indigo:#00bcd4; }
-    .stApp,[data-testid="stAppViewContainer"],[data-testid="stMain"],[data-testid="stMainBlockContainer"]{background:#eaf8fc!important;color:#102b3a!important}
-    [data-testid="stHeader"]{background:rgba(234,248,252,.97)!important}
-    [data-testid="stSidebar"],[data-testid="stSidebar"]>div:first-child{background:#003b49!important;border-right:1px solid #075568!important}
-    [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] *,
-    [data-testid="stSidebar"] [data-testid="stCaptionContainer"],
-    [data-testid="stSidebar"] [data-testid="stWidgetLabel"] *,
-    [data-testid="stSidebar"] label,[data-testid="stSidebar"] label p{color:#e8fbff!important;opacity:1!important}
-    [data-testid="stSidebar"] .nav-brand{color:#fff!important}
-    [data-testid="stSidebar"] .nav-subtitle{color:#a9dce7!important}
-    [data-testid="stSidebar"] hr{border-color:#176477!important}
-    [data-testid="stSidebar"] [data-testid="stRadio"] [role="radio"]{color:#e8fbff!important;background:transparent!important;border-radius:9px!important}
-    [data-testid="stSidebar"] [data-testid="stRadio"] [role="radio"]:hover{background:#075568!important}
-    [data-testid="stSidebar"] [data-testid="stRadio"] [role="radio"][aria-checked="true"]{background:#007f91!important;color:#fff!important;box-shadow:inset 3px 0 0 #55e6f2!important;font-weight:700!important}
-    [data-testid="stSidebar"] [data-testid="stRadio"] [role="radio"]>div:first-child{border:2px solid #8bdce8!important;background:#064858!important}
-    [data-testid="stSidebar"] [data-testid="stRadio"] [role="radio"][aria-checked="true"]>div:first-child{border-color:#b8f7fb!important;background:#00bfd2!important}
-    [data-testid="stSidebar"] .stButton>button{background:#075568!important;color:#fff!important;border:1px solid #27899a!important;border-radius:9px!important}
-    [data-testid="stSidebar"] .stButton>button:hover{background:#08758a!important;border-color:#55dce9!important}
-    h1,h2,h3,h4,h5,[data-testid="stMarkdownContainer"] h1,[data-testid="stMarkdownContainer"] h2,[data-testid="stMarkdownContainer"] h3{color:#102b3a!important;-webkit-text-fill-color:#102b3a!important}
-    p,label,.stMarkdown,[data-testid="stMarkdownContainer"] p,[data-testid="stMarkdownContainer"] li,[data-testid="stWidgetLabel"] p{color:#294b5a!important}
-    [data-testid="stCaptionContainer"],.hero-copy,.nav-subtitle,.footer-note{color:#557181!important}
-    .section-label,.hero-kicker{color:#008da3!important}
-    div[data-testid="stMetric"],div[data-testid="stVerticalBlockBorderWrapper"],div[data-testid="stForm"],div[data-testid="stExpander"]{background:#fff!important;border:1px solid #ccebf3!important;border-radius:12px!important;box-shadow:0 3px 12px rgba(0,103,125,.055)!important}
-    div[data-testid="stMetricLabel"],div[data-testid="stMetricLabel"] *,div[data-testid="stMetricValue"],div[data-testid="stMetricValue"] *{color:#102b3a!important;-webkit-text-fill-color:#102b3a!important}
-    .stTextInput input,.stTextArea textarea,[data-baseweb="input"] input,[data-baseweb="textarea"] textarea,[data-baseweb="select"]>div{background:#fbfeff!important;color:#102b3a!important;-webkit-text-fill-color:#102b3a!important;border-color:#a9d7e3!important;caret-color:#102b3a!important;border-radius:8px!important}
-    .stTextInput input:focus,.stTextArea textarea:focus,[data-baseweb="input"] input:focus{border-color:#00aabd!important;box-shadow:0 0 0 1px #00aabd!important}
-    .stTextInput input::placeholder,.stTextArea textarea::placeholder{color:#7795a2!important;-webkit-text-fill-color:#7795a2!important}
-    .stButton>button,.stDownloadButton>button,.stLinkButton>a{background:#fff!important;color:#124252!important;border:1px solid #b8dce5!important;border-radius:8px!important}
-    .stButton>button:hover,.stDownloadButton>button:hover{background:#e3f8fc!important;border-color:#4bc8d8!important}
-    .stButton>button[kind="primary"],.stFormSubmitButton>button[kind="primary"]{background:#007f91!important;color:#fff!important;border:1px solid #007f91!important;border-radius:9px!important}
-    .stButton>button[kind="primary"] *,.stFormSubmitButton>button[kind="primary"] *{color:#fff!important;-webkit-text-fill-color:#fff!important}
-    .stButton>button[kind="primary"]:hover,.stFormSubmitButton>button[kind="primary"]:hover{background:#006b7b!important;border-color:#006b7b!important}
-    [data-testid="stAlert"],[data-testid="stAlert"] *{background:#e0f7fb!important;color:#075568!important;border-color:#a9e4ed!important;-webkit-text-fill-color:#075568!important}
-    [data-testid="stFileUploader"] section{background:#f7fdff!important;border:1px dashed #82cbd9!important;border-radius:10px!important}
-    [data-testid="stFileUploader"] *{color:#294b5a!important}
-    [data-testid="stDateInput"] input{background:#fbfeff!important;color:#102b3a!important;-webkit-text-fill-color:#102b3a!important}
-    [data-testid="stImage"] img{border-radius:50%!important;object-fit:cover!important;border:3px solid #bcecf3!important}
-    .profile-avatar-fallback{width:142px;height:142px;margin:10px auto 20px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(145deg,#b9f3f8,#65d9e6);border:2px solid #48c6d5;color:#00566a!important;font-size:42px;font-weight:750}
-    .profile-display-name{color:#102b3a!important;text-align:center;font-size:1.12rem;font-weight:750;margin-top:12px}
-    .profile-username{color:#557181!important;text-align:center;margin-top:4px}
-    .profile-status{color:#00845a!important;text-align:center;font-size:.85rem;margin-top:14px}
-    .hero{border-bottom-color:#ccebf3!important}
-    .hero-title{color:#102b3a!important;-webkit-text-fill-color:#102b3a!important}
-    hr{border-color:#ccebf3!important}
-    </style>
-    """, unsafe_allow_html=True)
-
-# -----------------------------------------------------------------------------
 # SIDEBAR NAVIGATION
 # -----------------------------------------------------------------------------
 # Apply navigation requests before the radio widget is created. This avoids
