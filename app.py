@@ -8,7 +8,8 @@ import pandas as pd
 import streamlit as st
 from PIL import Image
 
-from modules.auth import init_db, register_user, authenticate_user\nfrom modules.user_profile import get_user_profile, save_user_profile
+from modules.auth import init_db, register_user, authenticate_user
+from modules.user_profile import get_user_profile, save_user_profile
 from modules.file_reader import extract_file_content
 from modules.claim_extractor import extract_claims
 from modules.verification import generate_search_links
