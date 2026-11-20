@@ -513,12 +513,61 @@ st.markdown(
     .profile-display-name{color:#102b3a!important}.profile-username{color:#557181!important}.profile-status{color:#00845a!important}
     hr{border-color:#ccebf3!important}
     [data-testid="stSidebarCollapsedControl"] button,button[aria-label="Open sidebar"],button[title="Open sidebar"]{width:42px!important;height:42px!important;min-width:42px!important;border-radius:50%!important;background:#00aabd!important;border:2px solid #b8edf4!important;box-shadow:0 3px 12px rgba(0,103,125,.22)!important;display:flex!important;align-items:center!important;justify-content:center!important;padding:0!important;overflow:hidden!important}
-    [data-testid="stSidebarCollapsedControl"] button svg,button[aria-label="Open sidebar"] svg,button[title="Open sidebar"] svg{display:none!important}
-    [data-testid="stSidebarCollapsedControl"] button:after,button[aria-label="Open sidebar"]:after,button[title="Open sidebar"]:after{content:"";display:block;width:21px;height:21px;background:#fff;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='8' r='4'/%3E%3Cpath d='M4 21a8 8 0 0 1 16 0'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='8' r='4'/%3E%3Cpath d='M4 21a8 8 0 0 1 16 0'/%3E%3C/svg%3E") center/contain no-repeat}
+    [data-testid="stSidebarCollapsedControl"] button svg,button[aria-label="Open sidebar"] svg,button[title="Open sidebar"] svg{display:block!important;width:21px!important;height:21px!important;color:#fff!important;stroke:#fff!important;opacity:1!important}
+    [data-testid="stSidebarCollapsedControl"] button:hover,button[aria-label="Open sidebar"]:hover,button[title="Open sidebar"]:hover{background:#007f91!important;transform:translateY(-1px)}
+
+    [class*="st-key-avatar_photo_area"]{position:relative!important;width:100%!important;min-height:160px!important;display:flex!important;justify-content:center!important;align-items:center!important}
+    [class*="st-key-avatar_photo_area"] [data-testid="stImage"] img{width:150px!important;height:150px!important;object-fit:cover!important;border-radius:50%!important}
+    [class*="st-key-avatar_photo_area"] [data-testid="stFileUploader"]{position:absolute!important;top:4px!important;right:calc(50% - 86px)!important;width:38px!important;height:38px!important;z-index:5!important;overflow:visible!important}
+    [class*="st-key-avatar_photo_area"] [data-testid="stFileUploader"]>div{padding:0!important;min-height:0!important}
+    [class*="st-key-avatar_photo_area"] [data-testid="stFileUploader"] section{padding:0!important;min-height:0!important;height:38px!important;width:38px!important;border:0!important;background:transparent!important;overflow:visible!important}
+    [class*="st-key-avatar_photo_area"] [data-testid="stFileUploader"] section>div{display:none!important}
+    [class*="st-key-avatar_photo_area"] [data-testid="stFileUploader"] button{width:38px!important;height:38px!important;min-height:38px!important;padding:0!important;border-radius:50%!important;background:#007f91!important;color:#fff!important;border:2px solid #fff!important;box-shadow:0 2px 9px rgba(0,0,0,.2)!important;font-size:0!important}
+    [class*="st-key-avatar_photo_area"] [data-testid="stFileUploader"] button:after{content:"✎";font-size:21px!important;line-height:1!important;color:#fff!important}
 </style>
     """,
     unsafe_allow_html=True,
 )
+
+
+active_theme = get_user_profile(st.session_state.authenticated_user["id"]).get("theme", "Light")
+if active_theme == "Dark":
+    st.markdown("""
+    <style>
+    :root{color-scheme:dark}
+    html,body,.stApp,[data-testid="stAppViewContainer"],[data-testid="stMain"],[data-testid="stMainBlockContainer"],[data-testid="stAppViewContainer"] .main,section.main{background:#101820!important;color:#edf4f7!important}
+    [data-testid="stHeader"]{background:#101820!important}
+    [data-testid="stSidebar"],[data-testid="stSidebar"]>div,[data-testid="stSidebar"]>div:first-child,[data-testid="stSidebar"] [data-testid="stSidebarContent"]{background:#07131b!important;border-color:#203642!important}
+    [data-testid="stSidebar"] *{color:#e6f1f5!important}
+    [data-testid="stSidebar"] [data-testid="stCaptionContainer"]{color:#9db5c0!important}
+    [data-testid="stSidebar"] [role="radio"]{background:transparent!important;color:#e6f1f5!important}
+    [data-testid="stSidebar"] [role="radio"]:hover{background:#18313d!important}
+    [data-testid="stSidebar"] [role="radio"][aria-checked="true"]{background:#07576a!important;color:#fff!important;box-shadow:inset 3px 0 0 #43d5e5!important}
+    [data-testid="stSidebar"] button{background:#07576a!important;color:#fff!important;border-color:#25889a!important}
+    h1,h2,h3,h4,h5,[data-testid="stMarkdownContainer"] h1,[data-testid="stMarkdownContainer"] h2,[data-testid="stMarkdownContainer"] h3{color:#f2f7fa!important;-webkit-text-fill-color:#f2f7fa!important}
+    p,label,.stMarkdown,[data-testid="stMarkdownContainer"] p,[data-testid="stMarkdownContainer"] li,[data-testid="stWidgetLabel"] p,[data-testid="stCaptionContainer"]{color:#c2d2d9!important}
+    .hero-title,.profile-display-name{color:#f2f7fa!important;-webkit-text-fill-color:#f2f7fa!important}
+    .hero-copy,.profile-username{color:#a8bdc7!important}
+    .hero-kicker,.section-label{color:#54d4e3!important}
+    div[data-testid="stMetric"],div[data-testid="stVerticalBlockBorderWrapper"],div[data-testid="stForm"],div[data-testid="stExpander"]{background:#172630!important;border:1px solid #2c4653!important;box-shadow:0 3px 12px rgba(0,0,0,.18)!important}
+    div[data-testid="stMetricLabel"],div[data-testid="stMetricLabel"] *,div[data-testid="stMetricValue"],div[data-testid="stMetricValue"] *{color:#f0f6f8!important;-webkit-text-fill-color:#f0f6f8!important}
+    .stTextInput input,.stTextArea textarea,.stNumberInput input,[data-baseweb="input"] input,[data-baseweb="textarea"] textarea,[data-baseweb="select"]>div,[data-testid="stDateInput"] input{background:#0d1b24!important;color:#f0f6f8!important;-webkit-text-fill-color:#f0f6f8!important;border:1px solid #385563!important;caret-color:#fff!important}
+    .stTextInput input::placeholder,.stTextArea textarea::placeholder,[data-baseweb="input"] input::placeholder,[data-baseweb="textarea"] textarea::placeholder{color:#8da6b1!important;-webkit-text-fill-color:#8da6b1!important}
+    [data-testid="stDateInput"],[data-testid="stDateInput"]>div,[data-testid="stDateInput"] [data-baseweb="input"],[data-testid="stDateInput"] button{background:#0d1b24!important;color:#f0f6f8!important;border-color:#385563!important}
+    .stButton>button,.stDownloadButton>button,.stLinkButton>a{background:#20343f!important;color:#edf5f8!important;border:1px solid #405b68!important}
+    .stButton>button[kind="primary"],.stFormSubmitButton>button[kind="primary"],div[data-testid="stFormSubmitButton"] button{background:#00869a!important;color:#fff!important;border-color:#16a6b8!important}
+    .stButton>button[kind="primary"] *, .stFormSubmitButton>button[kind="primary"] *,div[data-testid="stFormSubmitButton"] button *{color:#fff!important;-webkit-text-fill-color:#fff!important}
+    [data-testid="stAlert"]{background:#183641!important;border:1px solid #326273!important}
+    [data-testid="stAlert"] *{color:#dff8fc!important;-webkit-text-fill-color:#dff8fc!important}
+    [data-testid="stFileUploader"] section{background:#10232d!important;border:1px dashed #416a79!important}
+    [data-testid="stFileUploader"] *{color:#d5e5ea!important}
+    [data-testid="stImage"] img{border-color:#48c8d8!important}
+    .profile-avatar-fallback{background:#16404c!important;border-color:#48c8d8!important;color:#e8fbff!important}
+    .profile-status{color:#54dca0!important}
+    hr{border-color:#2b4652!important}
+    [data-testid="stSidebarCollapsedControl"] button,button[aria-label="Open sidebar"],button[title="Open sidebar"]{background:#08778a!important;border-color:#70dce7!important}
+    </style>
+    """, unsafe_allow_html=True)
 
 
 # SIDEBAR NAVIGATION
@@ -1295,18 +1344,29 @@ elif page == "Profile":
 
     with avatar_col:
         with st.container(border=True):
-            if profile.get("avatar"):
-                st.image(profile["avatar"], width=150)
-            else:
-                initials = "".join(part[0] for part in full_name.split()[:2]).upper()
-                st.markdown(
-                    f'<div class="profile-avatar-fallback">{html.escape(initials or "TL")}</div>',
-                    unsafe_allow_html=True,
+            with st.container(key="avatar_photo_area"):
+                avatar_file = st.file_uploader(
+                    "Edit profile picture",
+                    type=["jpg", "jpeg", "png", "webp"],
+                    accept_multiple_files=False,
+                    key="profile_avatar_upload",
+                    label_visibility="collapsed",
+                    help="Choose a JPG, PNG or WEBP image up to 5 MB.",
                 )
+                if avatar_file is not None:
+                    st.image(avatar_file, width=150)
+                elif profile.get("avatar"):
+                    st.image(profile["avatar"], width=150)
+                else:
+                    initials = "".join(part[0] for part in full_name.split()[:2]).upper()
+                    st.markdown(
+                        f'<div class="profile-avatar-fallback">{html.escape(initials or "TL")}</div>',
+                        unsafe_allow_html=True,
+                    )
             st.markdown(f'<div class="profile-display-name">{html.escape(full_name)}</div>', unsafe_allow_html=True)
             st.markdown(f'<div class="profile-username">@{html.escape(username)}</div>', unsafe_allow_html=True)
             st.markdown('<div class="profile-status">● Account active</div>', unsafe_allow_html=True)
-            st.caption("JPG, JPEG, PNG or WEBP · Max 5 MB")
+            st.caption("Click the pencil on your photo to change it · Max 5 MB")
 
     with details_col:
         with st.form("profile_form", clear_on_submit=False):
@@ -1330,12 +1390,6 @@ elif page == "Profile":
                 format="DD/MM/YYYY",
             )
             bio = st.text_area("About you", value=profile.get("bio", ""), height=95, placeholder="A short introduction (optional)")
-            avatar_file = st.file_uploader(
-                "Update profile picture",
-                type=["jpg", "jpeg", "png", "webp"],
-                accept_multiple_files=False,
-                help="Upload a square photo for the best result. Maximum size: 5 MB.",
-            )
             save_profile = st.form_submit_button("Save changes", type="primary", use_container_width=True)
 
         if save_profile:
@@ -1376,6 +1430,7 @@ elif page == "Profile":
     info1.metric("Username", username)
     info2.metric("Account ID", str(st.session_state.authenticated_user["id"]))
     st.caption("Your login username cannot be changed from this page. Your password is never displayed.")
+
 
 # SETTINGS
 # -----------------------------------------------------------------------------
