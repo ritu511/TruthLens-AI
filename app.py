@@ -544,6 +544,16 @@ if active_theme == "Dark":
     [data-testid="stSidebar"] [role="radio"]{background:transparent!important;color:#e6f1f5!important}
     [data-testid="stSidebar"] [role="radio"]:hover{background:#18313d!important}
     [data-testid="stSidebar"] [role="radio"][aria-checked="true"]{background:#07576a!important;color:#fff!important;box-shadow:inset 3px 0 0 #43d5e5!important}
+    [data-testid="stSidebar"] [role="radio"] *,
+    [data-testid="stSidebar"] [role="radio"] p,
+    [data-testid="stSidebar"] [role="radio"] span,
+    [data-testid="stSidebar"] [role="radio"] label{color:#e6f1f5!important;-webkit-text-fill-color:#e6f1f5!important;opacity:1!important}
+    [data-testid="stSidebar"] [role="radio"][aria-checked="true"] *,
+    [data-testid="stSidebar"] [role="radio"][aria-checked="true"] p,
+    [data-testid="stSidebar"] [role="radio"][aria-checked="true"] span{color:#fff!important;-webkit-text-fill-color:#fff!important}
+    [data-testid="stSidebar"] [data-testid="stWidgetLabel"] *,
+    [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] *,
+    [data-testid="stSidebar"] p{color:#dce9ee!important;-webkit-text-fill-color:#dce9ee!important}
     [data-testid="stSidebar"] button{background:#07576a!important;color:#fff!important;border-color:#25889a!important}
     h1,h2,h3,h4,h5,[data-testid="stMarkdownContainer"] h1,[data-testid="stMarkdownContainer"] h2,[data-testid="stMarkdownContainer"] h3{color:#f2f7fa!important;-webkit-text-fill-color:#f2f7fa!important}
     p,label,.stMarkdown,[data-testid="stMarkdownContainer"] p,[data-testid="stMarkdownContainer"] li,[data-testid="stWidgetLabel"] p,[data-testid="stCaptionContainer"]{color:#c2d2d9!important}
@@ -551,15 +561,35 @@ if active_theme == "Dark":
     .hero-copy,.profile-username{color:#a8bdc7!important}
     .hero-kicker,.section-label{color:#54d4e3!important}
     div[data-testid="stMetric"],div[data-testid="stVerticalBlockBorderWrapper"],div[data-testid="stForm"],div[data-testid="stExpander"]{background:#172630!important;border:1px solid #2c4653!important;box-shadow:0 3px 12px rgba(0,0,0,.18)!important}
+    [data-testid="stMain"] [data-testid="stVerticalBlockBorderWrapper"] *,
+    [data-testid="stMain"] [data-testid="stMarkdownContainer"] *,
+    [data-testid="stMain"] .stMarkdown strong,
+    [data-testid="stMain"] .stMarkdown b{color:#dce8ed!important;-webkit-text-fill-color:#dce8ed!important}
+    [data-testid="stMain"] [data-testid="stVerticalBlockBorderWrapper"] h1,
+    [data-testid="stMain"] [data-testid="stVerticalBlockBorderWrapper"] h2,
+    [data-testid="stMain"] [data-testid="stVerticalBlockBorderWrapper"] h3,
+    [data-testid="stMain"] [data-testid="stVerticalBlockBorderWrapper"] h4{color:#f4f8fa!important;-webkit-text-fill-color:#f4f8fa!important}
+    [data-testid="stMain"] [data-testid="stVerticalBlockBorderWrapper"]{background:#1b2b35!important;border-color:#344b57!important}
     div[data-testid="stMetricLabel"],div[data-testid="stMetricLabel"] *,div[data-testid="stMetricValue"],div[data-testid="stMetricValue"] *{color:#f0f6f8!important;-webkit-text-fill-color:#f0f6f8!important}
     .stTextInput input,.stTextArea textarea,.stNumberInput input,[data-baseweb="input"] input,[data-baseweb="textarea"] textarea,[data-baseweb="select"]>div,[data-testid="stDateInput"] input{background:#0d1b24!important;color:#f0f6f8!important;-webkit-text-fill-color:#f0f6f8!important;border:1px solid #385563!important;caret-color:#fff!important}
+    [data-baseweb="select"]>div,
+    [data-baseweb="select"] [role="combobox"],
+    [data-baseweb="select"] [data-testid="stSelectboxVirtualDropdown"],
+    [data-baseweb="popover"] [role="listbox"],
+    [data-baseweb="popover"] [role="option"]{background:#1b303b!important;color:#edf5f8!important;-webkit-text-fill-color:#edf5f8!important}
+    [data-baseweb="select"] svg{fill:#dce8ed!important;color:#dce8ed!important}
     .stTextInput input::placeholder,.stTextArea textarea::placeholder,[data-baseweb="input"] input::placeholder,[data-baseweb="textarea"] textarea::placeholder{color:#8da6b1!important;-webkit-text-fill-color:#8da6b1!important}
     [data-testid="stDateInput"],[data-testid="stDateInput"]>div,[data-testid="stDateInput"] [data-baseweb="input"],[data-testid="stDateInput"] button{background:#0d1b24!important;color:#f0f6f8!important;border-color:#385563!important}
     .stButton>button,.stDownloadButton>button,.stLinkButton>a{background:#20343f!important;color:#edf5f8!important;border:1px solid #405b68!important}
     .stButton>button[kind="primary"],.stFormSubmitButton>button[kind="primary"],div[data-testid="stFormSubmitButton"] button{background:#00869a!important;color:#fff!important;border-color:#16a6b8!important}
     .stButton>button[kind="primary"] *, .stFormSubmitButton>button[kind="primary"] *,div[data-testid="stFormSubmitButton"] button *{color:#fff!important;-webkit-text-fill-color:#fff!important}
-    [data-testid="stAlert"]{background:#183641!important;border:1px solid #326273!important}
-    [data-testid="stAlert"] *{color:#dff8fc!important;-webkit-text-fill-color:#dff8fc!important}
+    [data-testid="stAlert"],
+    [data-testid="stAlert"]>div,
+    [data-testid="stAlert"] [data-testid="stMarkdownContainer"]{background:#1b303b!important;border:1px solid #345563!important;border-radius:10px!important;box-shadow:none!important}
+    [data-testid="stAlert"] *,
+    [data-testid="stAlert"] p,
+    [data-testid="stAlert"] svg{color:#dcecf1!important;-webkit-text-fill-color:#dcecf1!important;fill:#dcecf1!important}
+    [data-testid="stAlert"] a{color:#70dce8!important;-webkit-text-fill-color:#70dce8!important}
     [data-testid="stFileUploader"] section{background:#10232d!important;border:1px dashed #416a79!important}
     [data-testid="stFileUploader"] *{color:#d5e5ea!important}
     [data-testid="stImage"] img{border-color:#48c8d8!important}
