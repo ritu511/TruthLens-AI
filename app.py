@@ -9,7 +9,7 @@ import streamlit as st
 from PIL import Image
 
 from modules.auth import init_db, register_user, authenticate_user
-from modules.user_profile import get_user_profile, save_user_profile
+from modules.user_profile import get_user_profile, save_user_profile, remove_user_avatar
 from modules.file_reader import extract_file_content
 from modules.claim_extractor import extract_claims
 from modules.verification import generate_search_links
@@ -1441,6 +1441,35 @@ elif page == "Profile":
         )
         st.divider()
 
+        st.markdown("#### Profile photo")
+        photo_col, upload_col = st.columns([1, 2], vertical_alignment="center")
+        with photo_col:
+            if profile.get("avatar"):
+                st.image(profile["avatar"], width=120)
+            else:
+                initials = "".join(part[0] for part in full_name.split()[:2]).upper()
+                st.markdown(
+                    f'<div class="profile-avatar-fallback">{html.escape(initials or "TL")}</div>',
+                    unsafe_allow_html=True,
+                )
+        with upload_col:
+            avatar_file = st.file_uploader(
+                "Upload or change photo",
+                type=["jpg", "jpeg", "png", "webp"],
+                accept_multiple_files=False,
+                key="profile_avatar_upload",
+                help="Choose a JPG, PNG or WEBP image up to 5 MB.",
+            )
+            if profile.get("avatar") and st.button("Remove photo", key="remove_profile_photo"):
+                remove_user_avatar(st.session_state.authenticated_user["id"])
+                st.success("Profile photo removed.")
+                st.rerun()
+
+        if avatar_file is not None:
+            st.caption("New photo selected. Click Save changes to apply it.")
+
+        st.divider()
+
         with st.form("profile_form", clear_on_submit=False):
             st.markdown("#### Personal information")
             first_name = st.text_input("First name", value=profile.get("first_name", ""), placeholder="Enter first name")
@@ -1466,6 +1495,16 @@ elif page == "Profile":
 
         if save_profile:
             try:
+                avatar_bytes = None
+                if avatar_file is not None:
+                    avatar_bytes = avatar_file.getvalue()
+                    if len(avatar_bytes) > 5 * 1024 * 1024:
+                        raise ValueError("Profile picture must be 5 MB or smaller.")
+                    image_check = Image.open(BytesIO(avatar_bytes))
+                    image_check.verify()
+                    if image_check.format not in ("JPEG", "PNG", "WEBP"):
+                        raise ValueError("Please upload a JPG, PNG or WEBP image.")
+
                 save_user_profile(
                     st.session_state.authenticated_user["id"],
                     " ".join(part for part in (first_name, middle_name, last_name) if part),
@@ -1480,6 +1519,7 @@ elif page == "Profile":
                     last_name=last_name,
                     phone=phone,
                     date_of_birth=dob.isoformat() if dob else "",
+                    avatar=avatar_bytes,
                 )
                 st.success("Your profile has been updated.")
                 st.rerun()
