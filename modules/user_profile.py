@@ -50,6 +50,16 @@ def get_user_profile(user_id):
         return dict(row)
 
 
+def remove_user_avatar(user_id):
+    """Remove only the saved profile photo for one user."""
+    with _connect() as conn:
+        _ensure_profile_table(conn)
+        conn.execute(
+            "UPDATE user_profiles SET avatar = NULL WHERE user_id = ?",
+            (user_id,),
+        )
+
+
 def save_user_profile(
     user_id, display_name, email, bio, theme="Light", compact=False,
     email_updates=True, investigation_updates=False, first_name="",
