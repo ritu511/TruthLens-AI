@@ -208,7 +208,39 @@ st.markdown(
     html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
     .stApp { background: var(--background); color: var(--foreground); }
     [data-testid="stHeader"] { background: rgba(250,250,250,.94); }
-    [data-testid="stSidebar"] { background: #ffffff; border-right: 1px solid var(--border); }
+    [data-testid="stSidebar"] { background: #17142b !important; border-right: 1px solid #2d2750 !important; }
+    [data-testid="stSidebar"] > div:first-child { background: #17142b !important; }
+    [data-testid="stSidebar"] [data-testid="stMarkdownContainer"],
+    [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] *,
+    [data-testid="stSidebar"] [data-testid="stCaptionContainer"],
+    [data-testid="stSidebar"] [data-testid="stWidgetLabel"],
+    [data-testid="stSidebar"] [data-testid="stWidgetLabel"] *,
+    [data-testid="stSidebar"] label,
+    [data-testid="stSidebar"] label p { color: #f4f0ff !important; opacity: 1 !important; }
+    [data-testid="stSidebar"] hr { border-color: #393255 !important; }
+    [data-testid="stSidebar"] [data-testid="stRadio"] [role="radiogroup"] { gap: 7px !important; }
+    [data-testid="stSidebar"] [data-testid="stRadio"] [role="radio"] {
+        color: #f4f0ff !important; background: transparent !important;
+        border-radius: 9px !important; padding: 8px 10px !important; min-height: 38px !important;
+    }
+    [data-testid="stSidebar"] [data-testid="stRadio"] [role="radio"]:hover { background: #292344 !important; }
+    [data-testid="stSidebar"] [data-testid="stRadio"] [role="radio"][aria-checked="true"] {
+        background: #39266d !important; color: #ffffff !important;
+        box-shadow: inset 3px 0 0 #a78bfa !important; font-weight: 700 !important;
+    }
+    [data-testid="stSidebar"] [data-testid="stRadio"] [role="radio"] > div:first-child {
+        border: 2px solid #b9a7f5 !important; background: #211b39 !important;
+    }
+    [data-testid="stSidebar"] [data-testid="stRadio"] [role="radio"][aria-checked="true"] > div:first-child {
+        border-color: #c4b5fd !important; background: #8b5cf6 !important;
+    }
+    [data-testid="stSidebar"] .stButton > button {
+        background: #292344 !important; color: #ffffff !important;
+        border: 1px solid #59468b !important; border-radius: 10px !important;
+    }
+    [data-testid="stSidebar"] .stButton > button:hover {
+        background: #39266d !important; border-color: #a78bfa !important;
+    }
     [data-testid="stSidebar"] * { color: #171717; }
     .block-container { max-width: 1420px; padding-top: 2rem; padding-bottom: 4rem; }
     h1, h2, h3, h4 { color: #111111 !important; letter-spacing: -.045em !important; font-weight: 650 !important; }
