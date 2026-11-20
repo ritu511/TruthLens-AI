@@ -1103,21 +1103,21 @@ elif page == "Investigate":
                             st.info("No EXIF metadata found.")
 
                     ai_result = forensic.get("ai_detection", {})
-                    st.markdown("#### AI image classifier (experimental)")
+                    st.markdown("#### TruthLens AI model analysis")
                     if ai_result.get("available"):
                         st.write(
-                            f"**Model output:** {ai_result.get('prediction', 'Unavailable')}"
+                            f"**TruthLens AI model output:** {ai_result.get('prediction', 'Unavailable')}"
                         )
                         score_columns = st.columns(2)
                         score_columns[0].metric(
-                            "AI score", f"{ai_result.get('ai_score', 0)}%"
+                            "AI-generated likelihood", f"{ai_result.get('ai_score', 0)}%"
                         )
                         score_columns[1].metric(
-                            "Human score", f"{ai_result.get('human_score', 0)}%"
+                            "Human-created likelihood", f"{ai_result.get('human_score', 0)}%"
                         )
-                        st.caption(f"Model: {ai_result.get('model', 'Not specified')}")
-                        st.warning(
-                            ai_result.get("warning", "Model output is not proof of image origin.")
+                        st.caption(f"Detection engine: {ai_result.get('engine', ai_result.get('model', 'Not specified'))}")
+                        st.info(
+                            ai_result.get("warning", "Model output is an indicator, not proof of image origin.")
                         )
                     else:
                         st.info(
