@@ -1,7 +1,7 @@
 import hashlib
 import html
 from copy import deepcopy
-from datetime import datetime
+from datetime import date, datetime
 from io import BytesIO
 
 import pandas as pd
@@ -241,7 +241,6 @@ st.markdown(
     [data-testid="stSidebar"] .stButton > button:hover {
         background: #39266d !important; border-color: #a78bfa !important;
     }
-    [data-testid="stSidebar"] * { color: #171717; }
     .block-container { max-width: 1420px; padding-top: 2rem; padding-bottom: 4rem; }
     h1, h2, h3, h4 { color: #111111 !important; letter-spacing: -.045em !important; font-weight: 650 !important; }
     h1 { font-size: clamp(2rem, 3.2vw, 2.7rem) !important; }
@@ -502,6 +501,114 @@ if active_profile.get("theme") == "Dark":
     .stButton>button:not([kind="primary"]),.stDownloadButton>button{background:#202530!important;color:#e5e7eb!important;border-color:#3b4352!important}
     [data-testid="stDataFrame"]{border-color:#303746!important}
     hr{border-color:#303746!important}
+    /* DARK PROFILE WORKSPACE — matched to the supplied account-dashboard reference */
+    :root {
+        --tl-bg: #0d0f0e;
+        --tl-surface: #151917;
+        --tl-ink: #f3f4f6;
+        --tl-muted: #a1a1aa;
+        --tl-border: #292f2b;
+        --tl-indigo: #8b5cf6;
+    }
+    .stApp, [data-testid="stAppViewContainer"], [data-testid="stMain"],
+    [data-testid="stMainBlockContainer"] { background: #0d0f0e !important; color: #e5e7eb !important; }
+    [data-testid="stHeader"] { background: #0d0f0e !important; }
+    [data-testid="stSidebar"], [data-testid="stSidebar"] > div:first-child {
+        background: #090b0a !important; border-right: 1px solid #252a27 !important;
+    }
+    [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] *,
+    [data-testid="stSidebar"] [data-testid="stCaptionContainer"],
+    [data-testid="stSidebar"] [data-testid="stWidgetLabel"] *,
+    [data-testid="stSidebar"] label, [data-testid="stSidebar"] label p {
+        color: #d4d4d8 !important; opacity: 1 !important;
+    }
+    [data-testid="stSidebar"] .nav-brand { color: #f4f4f5 !important; }
+    [data-testid="stSidebar"] .nav-subtitle { color: #a1a1aa !important; }
+    [data-testid="stSidebar"] hr { border-color: #292f2b !important; }
+    [data-testid="stSidebar"] [data-testid="stRadio"] [role="radio"] {
+        color: #d4d4d8 !important; background: transparent !important;
+    }
+    [data-testid="stSidebar"] [data-testid="stRadio"] [role="radio"][aria-checked="true"] {
+        background: #202923 !important; color: #ffffff !important;
+        box-shadow: inset 3px 0 0 #22c55e !important;
+    }
+    [data-testid="stSidebar"] [data-testid="stRadio"] [role="radio"] > div:first-child {
+        border-color: #71717a !important; background: #181c19 !important;
+    }
+    [data-testid="stSidebar"] [data-testid="stRadio"] [role="radio"][aria-checked="true"] > div:first-child {
+        border-color: #4ade80 !important; background: #16a34a !important;
+    }
+    [data-testid="stSidebar"] .stButton > button {
+        background: #171b18 !important; color: #e5e7eb !important;
+        border: 1px solid #343b36 !important;
+    }
+    h1,h2,h3,h4,h5,
+    [data-testid="stMarkdownContainer"] h1,
+    [data-testid="stMarkdownContainer"] h2,
+    [data-testid="stMarkdownContainer"] h3 {
+        color: #f3f4f6 !important; -webkit-text-fill-color: #f3f4f6 !important;
+    }
+    p, label, .stMarkdown, [data-testid="stMarkdownContainer"] p,
+    [data-testid="stMarkdownContainer"] li,
+    [data-testid="stWidgetLabel"] p { color: #d1d5db !important; }
+    [data-testid="stCaptionContainer"], .section-label, .hero-kicker,
+    .hero-copy, .nav-subtitle, .footer-note { color: #a1a1aa !important; }
+    .section-label, .hero-kicker { color: #a78bfa !important; }
+    div[data-testid="stMetric"], div[data-testid="stVerticalBlockBorderWrapper"],
+    div[data-testid="stForm"], div[data-testid="stExpander"] {
+        background: #151917 !important; border: 1px solid #292f2b !important;
+        border-radius: 11px !important; box-shadow: none !important;
+    }
+    div[data-testid="stMetricLabel"], div[data-testid="stMetricLabel"] *,
+    div[data-testid="stMetricValue"], div[data-testid="stMetricValue"] * {
+        color: #e5e7eb !important; -webkit-text-fill-color: #e5e7eb !important;
+    }
+    .stTextInput input, .stTextArea textarea,
+    [data-baseweb="input"] input, [data-baseweb="textarea"] textarea,
+    [data-baseweb="select"] > div {
+        background: #101411 !important; color: #f3f4f6 !important;
+        -webkit-text-fill-color: #f3f4f6 !important; border-color: #3a423c !important;
+        caret-color: #f3f4f6 !important;
+    }
+    .stTextInput input::placeholder, .stTextArea textarea::placeholder {
+        color: #858b87 !important; -webkit-text-fill-color: #858b87 !important;
+    }
+    .stButton > button, .stDownloadButton > button, .stLinkButton > a {
+        background: #1b211d !important; color: #e5e7eb !important;
+        border: 1px solid #3a423c !important;
+    }
+    .stButton > button[kind="primary"], .stFormSubmitButton > button[kind="primary"] {
+        background: #256d45 !important; color: #ffffff !important; border: 1px solid #2f8555 !important;
+    }
+    .stButton > button[kind="primary"] *, .stFormSubmitButton > button[kind="primary"] * {
+        color: #ffffff !important; -webkit-text-fill-color: #ffffff !important;
+    }
+    [data-testid="stAlert"], [data-testid="stAlert"] * {
+        background: #17231c !important; color: #d1fae5 !important;
+        border-color: #28543a !important; -webkit-text-fill-color: #d1fae5 !important;
+    }
+    [data-testid="stFileUploader"] section {
+        background: #111613 !important; border: 1px dashed #46524a !important;
+    }
+    [data-testid="stFileUploader"] * { color: #d1d5db !important; }
+    [data-testid="stDateInput"] input {
+        background: #101411 !important; color: #f3f4f6 !important;
+        -webkit-text-fill-color: #f3f4f6 !important;
+    }
+    [data-testid="stImage"] img { border-radius: 14px !important; object-fit: cover !important; }
+    .profile-avatar-fallback {
+        width: 142px; height: 142px; margin: 10px auto 20px; border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        background: linear-gradient(145deg,#303a33,#17231c);
+        border: 2px solid #3d5946; color: #86efac !important;
+        font-size: 42px; font-weight: 750;
+    }
+    .profile-display-name { color: #f4f4f5 !important; text-align: center; font-size: 1.12rem; font-weight: 700; margin-top: 12px; }
+    .profile-username { color: #a1a1aa !important; text-align: center; margin-top: 4px; }
+    .profile-status { color: #4ade80 !important; text-align: center; font-size: .85rem; margin-top: 14px; }
+    .hero { border-bottom-color: #292f2b !important; }
+    .hero-title { color: #f3f4f6 !important; -webkit-text-fill-color: #f3f4f6 !important; }
+    hr { border-color: #292f2b !important; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -1264,29 +1371,104 @@ elif page == "History":
 # -----------------------------------------------------------------------------
 elif page == "Profile":
     profile = get_user_profile(st.session_state.authenticated_user["id"])
+    username = st.session_state.authenticated_user["username"]
     st.markdown('<div class="section-label">MY ACCOUNT / PROFILE</div>', unsafe_allow_html=True)
-    st.title("Your profile")
-    st.caption("Manage the personal information connected to your TruthLens workspace.")
-    p1, p2 = st.columns([1, 2])
-    with p1:
-        with st.container(border=True):
-            st.markdown("<div style='text-align:center;padding:18px'><div style='width:86px;height:86px;border-radius:50%;background:linear-gradient(135deg,#8b5cf6,#4f46e5);color:white;font-size:32px;font-weight:800;display:grid;place-items:center;margin:auto'>"+html.escape((profile.get("display_name") or st.session_state.authenticated_user["username"])[0].upper())+"</div><h3 style='text-align:center'>"+html.escape(profile.get("display_name") or st.session_state.authenticated_user["username"])+"</h3><p style='text-align:center;color:#64748b'>@"+st.session_state.authenticated_user["username"]+"</p><span style='color:#059669'>● Active account</span></div>", unsafe_allow_html=True)
-    with p2:
-        with st.form("profile_form"):
-            display_name = st.text_input("Full name", value=profile.get("display_name",""))
-            email = st.text_input("Email address", value=profile.get("email",""))
-            bio = st.text_area("About you", value=profile.get("bio",""), height=100)
-            if st.form_submit_button("Save profile", type="primary"):
-                save_user_profile(st.session_state.authenticated_user["id"], display_name, email, bio)
-                st.success("Profile updated.")
-                st.rerun()
-    st.subheader("Account details")
-    left, right = st.columns(2)
-    left.metric("Username", st.session_state.authenticated_user["username"])
-    right.metric("Account ID", str(st.session_state.authenticated_user["id"]))
-    st.caption("Your password is securely stored as a salted hash and is never displayed here.")
+    st.title("Profile")
+    st.caption("Keep your personal details and profile photo up to date.")
 
-# -----------------------------------------------------------------------------
+    full_name = " ".join(
+        part for part in (
+            profile.get("first_name", ""),
+            profile.get("middle_name", ""),
+            profile.get("last_name", ""),
+        ) if part
+    ).strip() or username
+    avatar_col, details_col = st.columns([0.85, 2.15], gap="large")
+
+    with avatar_col:
+        with st.container(border=True):
+            if profile.get("avatar"):
+                st.image(profile["avatar"], width=150)
+            else:
+                initials = "".join(part[0] for part in full_name.split()[:2]).upper()
+                st.markdown(
+                    f'<div class="profile-avatar-fallback">{html.escape(initials or "TL")}</div>',
+                    unsafe_allow_html=True,
+                )
+            st.markdown(f'<div class="profile-display-name">{html.escape(full_name)}</div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="profile-username">@{html.escape(username)}</div>', unsafe_allow_html=True)
+            st.markdown('<div class="profile-status">● Account active</div>', unsafe_allow_html=True)
+            st.caption("JPG, JPEG, PNG or WEBP · Max 5 MB")
+
+    with details_col:
+        with st.form("profile_form", clear_on_submit=False):
+            st.markdown("#### Personal information")
+            first_name = st.text_input("First name", value=profile.get("first_name", ""), placeholder="Enter first name")
+            middle_name = st.text_input("Middle name", value=profile.get("middle_name", ""), placeholder="Enter middle name (optional)")
+            last_name = st.text_input("Last name", value=profile.get("last_name", ""), placeholder="Enter last name")
+            email = st.text_input("Email address", value=profile.get("email", ""), placeholder="you@example.com")
+            phone = st.text_input("Phone number", value=profile.get("phone", ""), placeholder="+91 98765 43210")
+            dob_value = None
+            if profile.get("date_of_birth"):
+                try:
+                    dob_value = date.fromisoformat(profile["date_of_birth"])
+                except ValueError:
+                    dob_value = None
+            dob = st.date_input(
+                "Date of birth",
+                value=dob_value,
+                min_value=date(1900, 1, 1),
+                max_value=date.today(),
+                format="DD/MM/YYYY",
+            )
+            bio = st.text_area("About you", value=profile.get("bio", ""), height=95, placeholder="A short introduction (optional)")
+            avatar_file = st.file_uploader(
+                "Update profile picture",
+                type=["jpg", "jpeg", "png", "webp"],
+                accept_multiple_files=False,
+                help="Upload a square photo for the best result. Maximum size: 5 MB.",
+            )
+            save_profile = st.form_submit_button("Save changes", type="primary", use_container_width=True)
+
+        if save_profile:
+            avatar_bytes = None
+            try:
+                if avatar_file is not None:
+                    avatar_bytes = avatar_file.getvalue()
+                    if len(avatar_bytes) > 5 * 1024 * 1024:
+                        raise ValueError("Profile picture must be 5 MB or smaller.")
+                    image_check = Image.open(BytesIO(avatar_bytes))
+                    image_check.verify()
+                    if image_check.format not in ("JPEG", "PNG", "WEBP"):
+                        raise ValueError("Please upload a JPG, PNG or WEBP image.")
+
+                save_user_profile(
+                    st.session_state.authenticated_user["id"],
+                    " ".join(part for part in (first_name, middle_name, last_name) if part),
+                    email,
+                    bio,
+                    theme=profile.get("theme", "Light"),
+                    compact=bool(profile.get("compact", False)),
+                    email_updates=bool(profile.get("email_updates", True)),
+                    investigation_updates=bool(profile.get("investigation_updates", False)),
+                    first_name=first_name,
+                    middle_name=middle_name,
+                    last_name=last_name,
+                    phone=phone,
+                    date_of_birth=dob.isoformat() if dob else "",
+                    avatar=avatar_bytes,
+                )
+                st.success("Your profile has been updated.")
+                st.rerun()
+            except (ValueError, OSError) as error:
+                st.error(str(error))
+
+    st.markdown("#### Account information")
+    info1, info2 = st.columns(2)
+    info1.metric("Username", username)
+    info2.metric("Account ID", str(st.session_state.authenticated_user["id"]))
+    st.caption("Your login username cannot be changed from this page. Your password is never displayed.")
+
 # SETTINGS
 # -----------------------------------------------------------------------------
 elif page == "Settings":
