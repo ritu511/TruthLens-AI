@@ -521,7 +521,8 @@ st.markdown(
     [class*="st-key-avatar_photo_area"] [data-testid="stFileUploader"]{position:absolute!important;top:4px!important;right:calc(50% - 86px)!important;width:38px!important;height:38px!important;z-index:5!important;overflow:visible!important}
     [class*="st-key-avatar_photo_area"] [data-testid="stFileUploader"]>div{padding:0!important;min-height:0!important}
     [class*="st-key-avatar_photo_area"] [data-testid="stFileUploader"] section{padding:0!important;min-height:0!important;height:38px!important;width:38px!important;border:0!important;background:transparent!important;overflow:visible!important}
-    [class*="st-key-avatar_photo_area"] [data-testid="stFileUploader"] section>div{display:none!important}
+    [class*="st-key-avatar_photo_area"] [data-testid="stFileUploader"] [data-testid="stFileUploaderDropzone"]{padding:0!important;min-height:38px!important;height:38px!important;width:38px!important;border:0!important;background:transparent!important}
+    [class*="st-key-avatar_photo_area"] [data-testid="stFileUploader"] [data-testid="stFileUploaderDropzone"]>div{display:none!important}
     [class*="st-key-avatar_photo_area"] [data-testid="stFileUploader"] button{width:38px!important;height:38px!important;min-height:38px!important;padding:0!important;border-radius:50%!important;background:#007f91!important;color:#fff!important;border:2px solid #fff!important;box-shadow:0 2px 9px rgba(0,0,0,.2)!important;font-size:0!important}
     [class*="st-key-avatar_photo_area"] [data-testid="stFileUploader"] button:after{content:"✎";font-size:21px!important;line-height:1!important;color:#fff!important}
 </style>
