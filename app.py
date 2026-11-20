@@ -89,82 +89,77 @@ if st.session_state.authenticated_user is None:
     st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-    .stApp {background:#f8f7ff;}
-    [data-testid="stHeader"]{background:transparent;}
-    .block-container{max-width:1500px;padding:0!important;}
-    .auth-shell{display:grid;grid-template-columns: minmax(420px,.88fr) minmax(520px,1.12fr);min-height:100vh;background:#fff;font-family:Inter,sans-serif;}
-    .auth-left{padding:54px clamp(34px,6vw,92px);display:flex;flex-direction:column;justify-content:center;}
-    .auth-right{padding:78px clamp(38px,6vw,96px);background:radial-gradient(circle at 100% 0%,#e3d7ff 0,transparent 30%),linear-gradient(145deg,#f8f5ff,#f0eaff);display:flex;flex-direction:column;justify-content:center;overflow:hidden;}
-    .brand{display:flex;align-items:center;gap:14px;margin-bottom:64px;color:#11152b;}
-    .brand-mark{width:58px;height:58px;border:5px solid #7138f4;border-radius:50%;display:grid;place-items:center;color:#7138f4;font-weight:800;font-size:22px;box-shadow:inset 0 0 0 4px #eee7ff;}
-    .brand-name{font-size:27px;font-weight:800;letter-spacing:-1.2px;line-height:1.1;}
-    .brand-sub{font-size:13px;color:#667085;margin-top:5px;}
-    .auth-heading{font-size:42px;font-weight:800;letter-spacing:-2px;color:#11152b;line-height:1.1;margin:0 0 12px;}
-    .auth-heading span{color:#7138f4;}
-    .auth-copy{color:#667085;font-size:16px;line-height:1.6;margin-bottom:30px;}
-    .auth-right h2{font-size:clamp(38px,4vw,58px);line-height:1.08;letter-spacing:-2px;color:#11152b;font-weight:800;margin:0 0 18px;}
-    .auth-right h2 span{color:#7138f4;}
-    .auth-right p{font-size:18px;color:#5d6680;line-height:1.6;max-width:650px;}
-    .auth-visual{margin:40px auto 30px;max-width:560px;width:100%;border:1px solid #ded3ff;background:rgba(255,255,255,.78);border-radius:22px;padding:28px;box-shadow:0 24px 70px rgba(92,57,180,.12);}
-    .visual-top{font-weight:750;font-size:20px;color:#171b32;border-bottom:1px solid #e9e3f8;padding-bottom:16px;}
-    .visual-row{display:flex;gap:16px;align-items:center;padding:22px 0;}
-    .visual-thumb{width:104px;height:78px;border-radius:12px;background:linear-gradient(135deg,#d8c5ff,#8c56f5);display:grid;place-items:center;color:white;font-size:30px;}
-    .visual-lines{flex:1}.visual-lines i{display:block;height:10px;border-radius:8px;background:#e5e0f2;margin:10px 0;}
-    .verified{display:inline-block;padding:9px 15px;border-radius:9px;background:#dcfce9;color:#07864a;font-weight:700;}
-    .auth-features{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:22px;}
-    .auth-feature strong{display:block;color:#171b32;margin:8px 0 5px;font-size:15px;}
-    .auth-feature small{color:#65708a;line-height:1.5;}
-    .auth-icon{width:42px;height:42px;border-radius:12px;background:#e8ddff;color:#7138f4;display:grid;place-items:center;font-weight:800;font-size:19px;}
-    .stTextInput input{border:1px solid #d7dbea!important;border-radius:11px!important;min-height:48px!important;background:white!important;}
-    .stTextInput label{font-weight:650!important;color:#11152b!important;}
-    .stButton>button[kind="primary"],.stFormSubmitButton>button[kind="primary"]{background:linear-gradient(100deg,#7138f4,#6330e8)!important;border:0!important;border-radius:11px!important;min-height:52px!important;font-weight:700!important;}
-    div[data-testid="stTabs"] button{font-weight:650!important;}
-    @media(max-width:900px){.auth-shell{grid-template-columns:1fr}.auth-left{padding:35px 25px}.auth-right{display:none}.brand{margin-bottom:40px}}
+    .stApp{background:#f8f7ff;font-family:Inter,sans-serif}
+    [data-testid="stHeader"]{background:transparent}
+    .block-container{max-width:1500px;padding:2rem 3rem 3rem}
+    .auth-brand{display:flex;align-items:center;gap:14px;margin:18px 0 62px}
+    .auth-mark{width:58px;height:58px;border:5px solid #7138f4;border-radius:50%;display:grid;place-items:center;color:#7138f4;font-weight:800;font-size:22px;box-shadow:inset 0 0 0 4px #eee7ff}
+    .auth-brand-name{font-size:27px;font-weight:800;letter-spacing:-1.2px;color:#11152b}
+    .auth-sub{font-size:13px;color:#667085;margin-top:4px}
+    .auth-heading{font-size:42px;font-weight:800;letter-spacing:-2px;color:#11152b;line-height:1.1;margin:0 0 12px}
+    .auth-heading span,.auth-right h2 span{color:#7138f4}
+    .auth-copy{color:#667085;font-size:16px;line-height:1.6;margin-bottom:26px}
+    .auth-right{background:radial-gradient(circle at 100% 0%,#e3d7ff 0,transparent 30%),linear-gradient(145deg,#f8f5ff,#f0eaff);border-radius:24px;padding:clamp(32px,5vw,76px);min-height:700px}
+    .auth-right h2{font-size:clamp(38px,4vw,58px);line-height:1.08;letter-spacing:-2px;color:#11152b;font-weight:800;margin:25px 0 18px}
+    .auth-right p{font-size:18px;color:#5d6680;line-height:1.6}
+    .auth-visual{margin:45px auto 30px;max-width:560px;border:1px solid #ded3ff;background:rgba(255,255,255,.8);border-radius:22px;padding:28px;box-shadow:0 24px 70px rgba(92,57,180,.12)}
+    .visual-top{font-weight:750;font-size:20px;color:#171b32;border-bottom:1px solid #e9e3f8;padding-bottom:16px}
+    .visual-row{display:flex;gap:16px;align-items:center;padding:22px 0}
+    .visual-thumb{width:104px;height:78px;border-radius:12px;background:linear-gradient(135deg,#d8c5ff,#8c56f5);display:grid;place-items:center;color:white;font-size:30px}
+    .visual-lines{flex:1}.visual-lines i{display:block;height:10px;border-radius:8px;background:#e5e0f2;margin:10px 0}
+    .verified{display:inline-block;padding:9px 15px;border-radius:9px;background:#dcfce9;color:#07864a;font-weight:700}
+    .auth-features{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:30px}
+    .auth-feature strong{display:block;color:#171b32;margin:8px 0 5px;font-size:14px}
+    .auth-feature small{color:#65708a;line-height:1.5}
+    .auth-icon{width:42px;height:42px;border-radius:12px;background:#e8ddff;color:#7138f4;display:grid;place-items:center;font-weight:800;font-size:18px}
+    .stTextInput input{border:1px solid #d7dbea!important;border-radius:11px!important;min-height:48px!important;background:white!important}
+    .stTextInput label{font-weight:650!important;color:#11152b!important}
+    .stButton>button[kind="primary"],.stFormSubmitButton>button[kind="primary"]{background:linear-gradient(100deg,#7138f4,#6330e8)!important;border:0!important;border-radius:11px!important;min-height:52px!important;font-weight:700!important}
+    div[data-testid="stTabs"] button{font-weight:650!important}
+    @media(max-width:900px){.block-container{padding:1rem!important}.auth-right{display:none}.auth-brand{margin:12px 0 38px}}
     </style>
-    <div class="auth-shell">
-      <section class="auth-left">
-        <div class="brand"><div class="brand-mark">TL</div><div><div class="brand-name">TruthLens <span style="color:#7138f4">AI</span></div><div class="brand-sub">Content Investigation Platform</div></div></div>
-        <h1 class="auth-heading">Welcome <span>Back</span></h1>
-        <p class="auth-copy">Sign in to investigate, verify, and track content with TruthLens AI.</p>
-    </section>
-    <section class="auth-right">
-      <h2>Discover the <span>Truth</span><br>Behind Every Story.</h2>
-      <p>AI-powered content investigation to inspect claims, analyze source credibility, and organize reliable evidence.</p>
-      <div class="auth-visual"><div class="visual-top">News Analysis</div><div class="visual-row"><div class="visual-thumb">▧</div><div class="visual-lines"><i></i><i></i><i style="width:72%"></i></div></div><span class="verified">✓ Evidence reviewed</span></div>
-      <div class="auth-features"><div class="auth-feature"><div class="auth-icon">AI</div><strong>AI Detection</strong><small>Inspect content and image indicators.</small></div><div class="auth-feature"><div class="auth-icon">✓</div><strong>Source Analysis</strong><small>Review evidence and source details.</small></div><div class="auth-feature"><div class="auth-icon">▥</div><strong>History</strong><small>Keep track of your investigations.</small></div></div>
-    </section></div>
     """, unsafe_allow_html=True)
-    st.markdown("<div style='max-width:490px;margin:-300px 0 50px clamp(25px,6vw,92px);position:relative'>", unsafe_allow_html=True)
-    auth_mode = st.radio("Account", ["Sign in", "Create account"], horizontal=True, label_visibility="collapsed", key="auth_mode")
-    if auth_mode == "Sign in":
-        with st.form("truthlens_login_form"):
-            login_username = st.text_input("Username", key="login_username", placeholder="Enter your username")
-            login_password = st.text_input("Password", type="password", key="login_password", placeholder="Enter your password")
-            remember = st.checkbox("Remember me", value=True)
-            login_submitted = st.form_submit_button("Sign In  →", type="primary", use_container_width=True)
-        if login_submitted:
-            account = authenticate_user(login_username, login_password)
-            if account:
-                st.session_state.authenticated_user = account
-                st.rerun()
-            else:
-                st.error("Username or password is incorrect.")
-    else:
-        with st.form("truthlens_register_form"):
-            new_username = st.text_input("Choose a username", key="register_username")
-            new_password = st.text_input("Create password", type="password", key="register_password")
-            confirm_password = st.text_input("Confirm password", type="password", key="register_confirm")
-            register_submitted = st.form_submit_button("Create Account", type="primary", use_container_width=True)
-        if register_submitted:
-            if new_password != confirm_password:
-                st.error("Passwords do not match.")
-            else:
-                success, message = register_user(new_username, new_password)
-                if success:
-                    st.success(message + " You can now sign in.")
+    left, right = st.columns([0.9, 1.1], gap="large")
+    with left:
+        st.markdown('<div class="auth-brand"><div class="auth-mark">TL</div><div><div class="auth-brand-name">TruthLens <span style="color:#7138f4">AI</span></div><div class="auth-sub">Content Investigation Platform</div></div></div><div class="auth-heading">Welcome <span style="color:#7138f4">Back</span></div><div class="auth-copy">Sign in to investigate, verify, and track content with TruthLens AI.</div>', unsafe_allow_html=True)
+        auth_mode = st.radio("Account", ["Sign in", "Create account"], horizontal=True, label_visibility="collapsed", key="auth_mode")
+        if auth_mode == "Sign in":
+            with st.form("truthlens_login_form"):
+                login_username = st.text_input("Username", key="login_username", placeholder="Enter your username")
+                login_password = st.text_input("Password", type="password", key="login_password", placeholder="Enter your password")
+                st.checkbox("Remember me", value=True)
+                login_submitted = st.form_submit_button("Sign In  →", type="primary", use_container_width=True)
+            if login_submitted:
+                account = authenticate_user(login_username, login_password)
+                if account:
+                    st.session_state.authenticated_user = account
+                    st.rerun()
                 else:
-                    st.error(message)
-    st.markdown("</div>", unsafe_allow_html=True)
+                    st.error("Username or password is incorrect.")
+        else:
+            with st.form("truthlens_register_form"):
+                new_username = st.text_input("Choose a username", key="register_username")
+                new_password = st.text_input("Create password", type="password", key="register_password")
+                confirm_password = st.text_input("Confirm password", type="password", key="register_confirm")
+                register_submitted = st.form_submit_button("Create Account", type="primary", use_container_width=True)
+            if register_submitted:
+                if new_password != confirm_password:
+                    st.error("Passwords do not match.")
+                else:
+                    success, message = register_user(new_username, new_password)
+                    if success:
+                        st.success(message + " You can now sign in.")
+                    else:
+                        st.error(message)
+    with right:
+        st.markdown("""
+        <div class="auth-right">
+          <h2>Discover the <span>Truth</span><br>Behind Every Story.</h2>
+          <p>AI-powered content investigation to inspect claims, analyze source credibility, and organize reliable evidence.</p>
+          <div class="auth-visual"><div class="visual-top">News Analysis</div><div class="visual-row"><div class="visual-thumb">▧</div><div class="visual-lines"><i></i><i></i><i style="width:72%"></i></div></div><span class="verified">✓ Evidence reviewed</span></div>
+          <div class="auth-features"><div class="auth-feature"><div class="auth-icon">AI</div><strong>AI Detection</strong><small>Inspect content and image indicators.</small></div><div class="auth-feature"><div class="auth-icon">✓</div><strong>Source Analysis</strong><small>Review evidence and source details.</small></div><div class="auth-feature"><div class="auth-icon">▥</div><strong>History</strong><small>Keep track of your investigations.</small></div></div>
+        </div>
+        """, unsafe_allow_html=True)
     st.stop()
 
 
