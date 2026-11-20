@@ -15,3 +15,5 @@ beautifulsoup4
 transformers
 torch
 reportlab
+sentence-transformers[image]
+huggingface_hub
