@@ -7,7 +7,7 @@ import pandas as pd
 import streamlit as st
 from PIL import Image
 
-from modules.auth import init_db, register_user, authenticate_user
+from modules.auth import init_db, register_user, authenticate_user\nfrom modules.user_profile import get_user_profile, save_user_profile
 from modules.file_reader import extract_file_content
 from modules.claim_extractor import extract_claims
 from modules.verification import generate_search_links
@@ -85,71 +85,89 @@ def sign_out():
 
 # -----------------------------------------------------------------------------
 # LOGIN / REGISTRATION
-# -----------------------------------------------------------------------------
 if st.session_state.authenticated_user is None:
-    st.markdown(
-        """
-        <div class="hero">
-            <div class="hero-kicker">Content investigation workspace</div>
-            <div class="hero-title">🔎 TruthLens AI</div>
-            <div class="hero-copy">
-                Sign in or create an account to open your investigation workspace.
-            </div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
-    login_tab, register_tab = st.tabs(["Sign in", "Create account"])
-
-    with login_tab:
+    st.markdown("""
+    <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+    .stApp {background:#f8f7ff;}
+    [data-testid="stHeader"]{background:transparent;}
+    .block-container{max-width:1500px;padding:0!important;}
+    .auth-shell{display:grid;grid-template-columns: minmax(420px,.88fr) minmax(520px,1.12fr);min-height:100vh;background:#fff;font-family:Inter,sans-serif;}
+    .auth-left{padding:54px clamp(34px,6vw,92px);display:flex;flex-direction:column;justify-content:center;}
+    .auth-right{padding:78px clamp(38px,6vw,96px);background:radial-gradient(circle at 100% 0%,#e3d7ff 0,transparent 30%),linear-gradient(145deg,#f8f5ff,#f0eaff);display:flex;flex-direction:column;justify-content:center;overflow:hidden;}
+    .brand{display:flex;align-items:center;gap:14px;margin-bottom:64px;color:#11152b;}
+    .brand-mark{width:58px;height:58px;border:5px solid #7138f4;border-radius:50%;display:grid;place-items:center;color:#7138f4;font-weight:800;font-size:22px;box-shadow:inset 0 0 0 4px #eee7ff;}
+    .brand-name{font-size:27px;font-weight:800;letter-spacing:-1.2px;line-height:1.1;}
+    .brand-sub{font-size:13px;color:#667085;margin-top:5px;}
+    .auth-heading{font-size:42px;font-weight:800;letter-spacing:-2px;color:#11152b;line-height:1.1;margin:0 0 12px;}
+    .auth-heading span{color:#7138f4;}
+    .auth-copy{color:#667085;font-size:16px;line-height:1.6;margin-bottom:30px;}
+    .auth-right h2{font-size:clamp(38px,4vw,58px);line-height:1.08;letter-spacing:-2px;color:#11152b;font-weight:800;margin:0 0 18px;}
+    .auth-right h2 span{color:#7138f4;}
+    .auth-right p{font-size:18px;color:#5d6680;line-height:1.6;max-width:650px;}
+    .auth-visual{margin:40px auto 30px;max-width:560px;width:100%;border:1px solid #ded3ff;background:rgba(255,255,255,.78);border-radius:22px;padding:28px;box-shadow:0 24px 70px rgba(92,57,180,.12);}
+    .visual-top{font-weight:750;font-size:20px;color:#171b32;border-bottom:1px solid #e9e3f8;padding-bottom:16px;}
+    .visual-row{display:flex;gap:16px;align-items:center;padding:22px 0;}
+    .visual-thumb{width:104px;height:78px;border-radius:12px;background:linear-gradient(135deg,#d8c5ff,#8c56f5);display:grid;place-items:center;color:white;font-size:30px;}
+    .visual-lines{flex:1}.visual-lines i{display:block;height:10px;border-radius:8px;background:#e5e0f2;margin:10px 0;}
+    .verified{display:inline-block;padding:9px 15px;border-radius:9px;background:#dcfce9;color:#07864a;font-weight:700;}
+    .auth-features{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:22px;}
+    .auth-feature strong{display:block;color:#171b32;margin:8px 0 5px;font-size:15px;}
+    .auth-feature small{color:#65708a;line-height:1.5;}
+    .auth-icon{width:42px;height:42px;border-radius:12px;background:#e8ddff;color:#7138f4;display:grid;place-items:center;font-weight:800;font-size:19px;}
+    .stTextInput input{border:1px solid #d7dbea!important;border-radius:11px!important;min-height:48px!important;background:white!important;}
+    .stTextInput label{font-weight:650!important;color:#11152b!important;}
+    .stButton>button[kind="primary"],.stFormSubmitButton>button[kind="primary"]{background:linear-gradient(100deg,#7138f4,#6330e8)!important;border:0!important;border-radius:11px!important;min-height:52px!important;font-weight:700!important;}
+    div[data-testid="stTabs"] button{font-weight:650!important;}
+    @media(max-width:900px){.auth-shell{grid-template-columns:1fr}.auth-left{padding:35px 25px}.auth-right{display:none}.brand{margin-bottom:40px}}
+    </style>
+    <div class="auth-shell">
+      <section class="auth-left">
+        <div class="brand"><div class="brand-mark">TL</div><div><div class="brand-name">TruthLens <span style="color:#7138f4">AI</span></div><div class="brand-sub">Content Investigation Platform</div></div></div>
+        <h1 class="auth-heading">Welcome <span>Back</span></h1>
+        <p class="auth-copy">Sign in to investigate, verify, and track content with TruthLens AI.</p>
+    </section>
+    <section class="auth-right">
+      <h2>Discover the <span>Truth</span><br>Behind Every Story.</h2>
+      <p>AI-powered content investigation to inspect claims, analyze source credibility, and organize reliable evidence.</p>
+      <div class="auth-visual"><div class="visual-top">News Analysis</div><div class="visual-row"><div class="visual-thumb">▧</div><div class="visual-lines"><i></i><i></i><i style="width:72%"></i></div></div><span class="verified">✓ Evidence reviewed</span></div>
+      <div class="auth-features"><div class="auth-feature"><div class="auth-icon">AI</div><strong>AI Detection</strong><small>Inspect content and image indicators.</small></div><div class="auth-feature"><div class="auth-icon">✓</div><strong>Source Analysis</strong><small>Review evidence and source details.</small></div><div class="auth-feature"><div class="auth-icon">▥</div><strong>History</strong><small>Keep track of your investigations.</small></div></div>
+    </section></div>
+    """, unsafe_allow_html=True)
+    st.markdown("<div style='max-width:490px;margin:-300px 0 50px clamp(25px,6vw,92px);position:relative'>", unsafe_allow_html=True)
+    auth_mode = st.radio("Account", ["Sign in", "Create account"], horizontal=True, label_visibility="collapsed", key="auth_mode")
+    if auth_mode == "Sign in":
         with st.form("truthlens_login_form"):
-            login_username = st.text_input("Username", key="login_username")
-            login_password = st.text_input(
-                "Password", type="password", key="login_password"
-            )
-            login_submitted = st.form_submit_button(
-                "Sign in", type="primary", use_container_width=True
-            )
-
+            login_username = st.text_input("Username", key="login_username", placeholder="Enter your username")
+            login_password = st.text_input("Password", type="password", key="login_password", placeholder="Enter your password")
+            remember = st.checkbox("Remember me", value=True)
+            login_submitted = st.form_submit_button("Sign In  →", type="primary", use_container_width=True)
         if login_submitted:
             account = authenticate_user(login_username, login_password)
             if account:
                 st.session_state.authenticated_user = account
-                st.success("Signed in successfully.")
                 st.rerun()
             else:
                 st.error("Username or password is incorrect.")
-
-    with register_tab:
+    else:
         with st.form("truthlens_register_form"):
-            new_username = st.text_input(
-                "Choose a username", key="register_username"
-            )
-            new_password = st.text_input(
-                "Create password", type="password", key="register_password"
-            )
-            confirm_password = st.text_input(
-                "Confirm password", type="password", key="register_confirm"
-            )
-            register_submitted = st.form_submit_button(
-                "Create account", type="primary", use_container_width=True
-            )
-
+            new_username = st.text_input("Choose a username", key="register_username")
+            new_password = st.text_input("Create password", type="password", key="register_password")
+            confirm_password = st.text_input("Confirm password", type="password", key="register_confirm")
+            register_submitted = st.form_submit_button("Create Account", type="primary", use_container_width=True)
         if register_submitted:
             if new_password != confirm_password:
                 st.error("Passwords do not match.")
             else:
                 success, message = register_user(new_username, new_password)
                 if success:
-                    st.success(message)
+                    st.success(message + " You can now sign in.")
                 else:
                     st.error(message)
-
+    st.markdown("</div>", unsafe_allow_html=True)
     st.stop()
 
 
-# -----------------------------------------------------------------------------
 # UI STYLING — VERCEL-INSPIRED PROFESSIONAL THEME
 # -----------------------------------------------------------------------------
 st.markdown(
@@ -423,7 +441,7 @@ with st.sidebar:
     st.divider()
     page = st.radio(
         "WORKSPACE",
-        ["Overview", "Investigate", "Evidence Review", "Reports", "History", "About"],
+        ["Overview", "Investigate", "Evidence Review", "Reports", "History", "Profile", "Settings", "About"],
         label_visibility="visible",
         key="workspace_page",
     )
@@ -1162,6 +1180,59 @@ elif page == "History":
         st.info(
             "No extraction history yet. Start by adding a source in Investigate."
         )
+
+
+# -----------------------------------------------------------------------------
+# PROFILE
+# -----------------------------------------------------------------------------
+elif page == "Profile":
+    profile = get_user_profile(st.session_state.authenticated_user["id"])
+    st.markdown('<div class="section-label">MY ACCOUNT / PROFILE</div>', unsafe_allow_html=True)
+    st.title("Your profile")
+    st.caption("Manage the personal information connected to your TruthLens workspace.")
+    p1, p2 = st.columns([1, 2])
+    with p1:
+        with st.container(border=True):
+            st.markdown("<div style='text-align:center;padding:18px'><div style='width:86px;height:86px;border-radius:50%;background:linear-gradient(135deg,#8b5cf6,#4f46e5);color:white;font-size:32px;font-weight:800;display:grid;place-items:center;margin:auto'>"+(profile.get("display_name") or st.session_state.authenticated_user["username"])[0].upper()+"</div><h3 style='text-align:center'>"+(profile.get("display_name") or st.session_state.authenticated_user["username"])+"</h3><p style='text-align:center;color:#64748b'>@"+st.session_state.authenticated_user["username"]+"</p><span style='color:#059669'>● Active account</span></div>", unsafe_allow_html=True)
+    with p2:
+        with st.form("profile_form"):
+            display_name = st.text_input("Full name", value=profile.get("display_name",""))
+            email = st.text_input("Email address", value=profile.get("email",""))
+            bio = st.text_area("About you", value=profile.get("bio",""), height=100)
+            if st.form_submit_button("Save profile", type="primary"):
+                save_user_profile(st.session_state.authenticated_user["id"], display_name, email, bio)
+                st.success("Profile updated.")
+                st.rerun()
+    st.subheader("Account details")
+    left, right = st.columns(2)
+    left.metric("Username", st.session_state.authenticated_user["username"])
+    right.metric("Account ID", str(st.session_state.authenticated_user["id"]))
+    st.caption("Your password is securely stored as a salted hash and is never displayed here.")
+
+# -----------------------------------------------------------------------------
+# SETTINGS
+# -----------------------------------------------------------------------------
+elif page == "Settings":
+    profile = get_user_profile(st.session_state.authenticated_user["id"])
+    st.markdown('<div class="section-label">MY ACCOUNT / PREFERENCES</div>', unsafe_allow_html=True)
+    st.title("Settings")
+    st.caption("Control your workspace experience and account preferences.")
+    with st.container(border=True):
+        st.subheader("Appearance")
+        theme = st.selectbox("Workspace theme", ["Light", "Dark"], index=0 if profile.get("theme","Light")=="Light" else 1)
+        compact = st.toggle("Compact layout", value=bool(profile.get("compact", False)))
+    with st.container(border=True):
+        st.subheader("Notifications")
+        email_updates = st.toggle("Product and account updates", value=bool(profile.get("email_updates", True)))
+        investigation_updates = st.toggle("Investigation reminders", value=bool(profile.get("investigation_updates", False)))
+    with st.container(border=True):
+        st.subheader("Security & access")
+        st.info("Passwords are protected using PBKDF2-HMAC-SHA256. Never share your password.")
+        st.write("Signed in as **"+st.session_state.authenticated_user["username"]+"**")
+    if st.button("Save settings", type="primary"):
+        save_user_profile(st.session_state.authenticated_user["id"], profile.get("display_name",""), profile.get("email",""), profile.get("bio",""), theme=theme, compact=compact, email_updates=email_updates, investigation_updates=investigation_updates)
+        st.success("Settings saved.")
+        st.rerun()
 
 
 # -----------------------------------------------------------------------------
