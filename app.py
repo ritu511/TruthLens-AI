@@ -1,4 +1,5 @@
 import hashlib
+import html
 from copy import deepcopy
 from datetime import datetime
 from io import BytesIO
@@ -1211,7 +1212,7 @@ elif page == "Profile":
     p1, p2 = st.columns([1, 2])
     with p1:
         with st.container(border=True):
-            st.markdown("<div style='text-align:center;padding:18px'><div style='width:86px;height:86px;border-radius:50%;background:linear-gradient(135deg,#8b5cf6,#4f46e5);color:white;font-size:32px;font-weight:800;display:grid;place-items:center;margin:auto'>"+(profile.get("display_name") or st.session_state.authenticated_user["username"])[0].upper()+"</div><h3 style='text-align:center'>"+(profile.get("display_name") or st.session_state.authenticated_user["username"])+"</h3><p style='text-align:center;color:#64748b'>@"+st.session_state.authenticated_user["username"]+"</p><span style='color:#059669'>● Active account</span></div>", unsafe_allow_html=True)
+            st.markdown("<div style='text-align:center;padding:18px'><div style='width:86px;height:86px;border-radius:50%;background:linear-gradient(135deg,#8b5cf6,#4f46e5);color:white;font-size:32px;font-weight:800;display:grid;place-items:center;margin:auto'>"+html.escape((profile.get("display_name") or st.session_state.authenticated_user["username"])[0].upper())+"</div><h3 style='text-align:center'>"+html.escape(profile.get("display_name") or st.session_state.authenticated_user["username"])+"</h3><p style='text-align:center;color:#64748b'>@"+st.session_state.authenticated_user["username"]+"</p><span style='color:#059669'>● Active account</span></div>", unsafe_allow_html=True)
     with p2:
         with st.form("profile_form"):
             display_name = st.text_input("Full name", value=profile.get("display_name",""))
