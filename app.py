@@ -666,6 +666,13 @@ st.markdown("""<style>
     .tl-sidebar-avatar{width:36px;height:36px;flex:0 0 36px;border-radius:50%;display:grid;place-items:center;background:#00aabd;color:#fff!important;font-size:14px;font-weight:800}
     .tl-sidebar-user{font-size:.82rem;font-weight:750;color:#effcff!important;line-height:1.3;overflow-wrap:anywhere}
     .tl-sidebar-role{font-size:.68rem;color:#b8edf4!important;margin-top:3px}
+    [data-testid="stSidebar"] [data-testid="stButton"] button[key="sidebar_profile_button"],
+    [data-testid="stSidebar"] div[data-testid="stButton"]:has(button[kind="secondary"]) button{
+        background:rgba(0,40,52,.18)!important;border:1px solid #27899a!important;
+        color:#effcff!important;text-align:left!important;justify-content:flex-start!important;
+        min-height:38px!important;padding:5px 10px!important;font-weight:750!important;
+    }
+    [data-testid="stSidebar"] [data-testid="stButton"] button[key="sidebar_profile_button"] *{color:#effcff!important}
     [data-testid="stSidebar"] [data-testid="stRadio"] [role="radiogroup"]{gap:5px!important}
     [data-testid="stSidebar"] [data-testid="stRadio"] [role="radio"]{min-height:43px!important;padding:9px 12px!important;border-radius:10px!important;background:transparent!important;color:#effcff!important}
     [data-testid="stSidebar"] [data-testid="stRadio"] [role="radio"]>div:first-child{display:none!important}
@@ -687,7 +694,6 @@ page_icons = {
     "Evidence Review": "▤  Evidence Review",
     "Reports": "▧  Reports",
     "History": "◷  History",
-    "Profile": "◉  Profile",
     "Settings": "⚙  Settings",
     "About": "ⓘ  About",
 }
@@ -701,17 +707,22 @@ with st.sidebar:
     st.markdown('<div class="tl-sidebar-section">MAIN MENU</div>', unsafe_allow_html=True)
     page = st.radio(
         "MAIN MENU",
-        ["Overview", "Investigate", "Evidence Review", "Reports", "History", "Profile", "Settings", "About"],
+        ["Overview", "Investigate", "Evidence Review", "Reports", "History", "Settings", "About"],
         format_func=lambda item: page_icons[item],
         label_visibility="collapsed",
         key="workspace_page",
     )
-    username = html.escape(st.session_state.authenticated_user.get("username", "User"))
-    initials = html.escape((st.session_state.authenticated_user.get("username", "U")[:1] or "U").upper())
+    username = st.session_state.authenticated_user.get("username", "User")
+    initials = html.escape((username[:1] or "U").upper())
     st.markdown(
-        '<div class="tl-sidebar-profile"><div class="tl-sidebar-avatar">' + initials +
-        '</div><div><div class="tl-sidebar-user">' + username +
-        '</div><div class="tl-sidebar-role">TruthLens AI User</div></div></div>',
+        '<div class="tl-sidebar-profile"><div class="tl-sidebar-avatar">' + initials + '</div>',
+        unsafe_allow_html=True,
+    )
+    if st.button(f"{username}  ·  Profile", key="sidebar_profile_button", use_container_width=True):
+        st.session_state["pending_workspace_page"] = "Profile"
+        st.rerun()
+    st.markdown(
+        '<div class="tl-sidebar-role" style="padding-left:52px;margin-top:-9px">TruthLens AI User</div>',
         unsafe_allow_html=True,
     )
     if st.button("↪  Sign out", use_container_width=True):
