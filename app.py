@@ -26,7 +26,7 @@ from modules.cloud_store import (
     analytics_for_user, delete_user_investigation, get_user_investigation,
     list_investigation_evidence, supabase_configured,
 )
-from modules.ai_features import assess_claim_with_context, chat_answer
+from modules.ai_features import assess_claim_with_context, ai_claim_review, chat_answer
 
 
 # -----------------------------------------------------------------------------
@@ -1451,6 +1451,14 @@ elif page == "Claim Verification":
                 st.write(claim)
                 st.subheader(result["conclusion"])
                 st.write(result["explanation"])
+                if st.button("Run AI review", key=f"ai_claim_review_{number}", type="primary"):
+                    with st.spinner("Reviewing the collected evidence..."):
+                        model_review = ai_claim_review(claim, st.session_state.evidence)
+                    st.session_state[f"claim_review_result_{number}"] = model_review
+                model_review = st.session_state.get(f"claim_review_result_{number}")
+                if model_review:
+                    st.markdown("**" + model_review["mode"] + "**")
+                    st.write(model_review["answer"])
                 cols = st.columns(4)
                 for col, label in zip(cols, ["Supports", "Contradicts", "Context only", "Unclear"]):
                     col.metric(label, result["counts"][label])
