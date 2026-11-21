@@ -93,12 +93,12 @@ def _safe(value):
     """Escape text and apply the Devanagari font only to Hindi character runs."""
     latin, hindi = _register_unicode_font()
     raw = str(value if value is not None else "")
-    parts = re.split(r"([\\u0900-\\u097F\\uA8E0-\\uA8FF]+)", raw)
+    parts = re.split(r"([\u0900-\u097F\uA8E0-\uA8FF]+)", raw)
     output = []
     for part in parts:
         escaped = (part.replace("&", "&amp;").replace("<", "&lt;")
-                       .replace(">", "&gt;").replace("\\n", "<br/>"))
-        if part and re.fullmatch(r"[\\u0900-\\u097F\\uA8E0-\\uA8FF]+", part):
+                       .replace(">", "&gt;").replace("\n", "<br/>"))
+        if part and re.fullmatch(r"[\u0900-\u097F\uA8E0-\uA8FF]+", part):
             output.append(f'<font name="{hindi}">{escaped}</font>')
         else:
             output.append(escaped)
