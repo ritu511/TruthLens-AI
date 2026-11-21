@@ -686,9 +686,11 @@ st.markdown("""<style>
 
 # SIDEBAR NAVIGATION
 # -----------------------------------------------------------------------------
-# Apply navigation requests before the radio widget is created.
-if "pending_workspace_page" in st.session_state:
-    st.session_state["workspace_page"] = st.session_state.pop("pending_workspace_page")
+# Route the bottom account button to Profile without adding a hidden menu row.
+profile_requested = st.session_state.pop("pending_workspace_page", None) == "Profile"
+if profile_requested:
+    # Keep the radio widget's key valid because Profile is intentionally not a menu item.
+    st.session_state["workspace_page"] = "Overview"
 
 page_icons = {
     "Overview": "⌂  Overview",
@@ -696,7 +698,6 @@ page_icons = {
     "Evidence Review": "▤  Evidence Review",
     "Reports": "▧  Reports",
     "History": "◷  History",
-    "Profile": "",
     "Settings": "⚙  Settings",
     "About": "ⓘ  About",
 }
@@ -708,13 +709,14 @@ with st.sidebar:
         unsafe_allow_html=True,
     )
     st.markdown('<div class="tl-sidebar-section">MAIN MENU</div>', unsafe_allow_html=True)
-    page = st.radio(
+    selected_menu_page = st.radio(
         "MAIN MENU",
-        ["Overview", "Investigate", "Evidence Review", "Reports", "History", "Profile", "Settings", "About"],
+        ["Overview", "Investigate", "Evidence Review", "Reports", "History", "Settings", "About"],
         format_func=lambda item: page_icons[item],
         label_visibility="collapsed",
         key="workspace_page",
     )
+    page = "Profile" if profile_requested else selected_menu_page
     username = st.session_state.authenticated_user.get("username", "User")
     initials = html.escape((username[:1] or "U").upper())
     st.markdown(
