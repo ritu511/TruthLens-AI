@@ -19,7 +19,13 @@ from modules.evidence_similarity import analyze_claim_evidence_similarity
 from modules.image_forensics import analyze_image
 from modules.source_credibility import analyze_source
 from modules.claim_assessment import assess_claim
-from modules.report_generator import generate_pdf_report
+from modules.report_generator import generate_pdf_report, generate_investigation_pdf
+from modules.cloud_store import (
+    save_investigation, list_user_investigations,
+    save_investigation_evidence, update_investigation_claims,
+    analytics_for_user, delete_user_investigation, supabase_configured,
+)
+from modules.ai_features import assess_claim_with_context, chat_answer
 
 
 # -----------------------------------------------------------------------------
@@ -54,6 +60,8 @@ DEFAULTS = {
     "selected_claims": [],
     "evidence": [],
     "forensic_result": None,
+    "current_investigation_id": None,
+    "chat_messages": [],
 }
 
 for key, value in DEFAULTS.items():
@@ -70,10 +78,46 @@ def reset_investigation(new_text="", filename="", content_hash=""):
     st.session_state.selected_claims = []
     st.session_state.evidence = []
     st.session_state.forensic_result = None
+    st.session_state.current_investigation_id = None
 
     # Clear the multiselect's stored value before it is recreated.
     st.session_state.pop("dashboard_claim_selection", None)
     st.session_state.pop("dashboard_extracted_text_editor", None)
+
+
+
+def persist_current_investigation(title=None, text=None):
+    """Persist the active investigation without interrupting the workflow."""
+    account = st.session_state.get("authenticated_user") or {}
+    content = st.session_state.get("extracted_text", "") if text is None else text
+    if not account.get("id") or not content:
+        return None
+    username = account.get("username", "user")
+    display_title = title or st.session_state.get("current_filename") or "Untitled investigation"
+    try:
+        saved_id = save_investigation(
+            account["id"], username, display_title, content,
+            source_name=display_title,
+            claims=st.session_state.get("claims", []),
+        )
+        st.session_state.current_investigation_id = saved_id
+        return saved_id
+    except Exception as error:
+        st.warning("Cloud/local history could not be saved: " + str(error))
+        return None
+
+
+def persist_claims():
+    account = st.session_state.get("authenticated_user") or {}
+    investigation_id = st.session_state.get("current_investigation_id")
+    if account.get("id") and investigation_id:
+        try:
+            update_investigation_claims(
+                account["id"], account.get("username", "user"),
+                investigation_id, st.session_state.get("claims", []),
+            )
+        except Exception as error:
+            st.warning("Could not update saved claims: " + str(error))
 
 
 def sign_out():
@@ -698,6 +742,8 @@ page_icons = {
     "Evidence Review": "▤  Evidence Review",
     "Reports": "▧  Reports",
     "History": "◷  History",
+    "AI Assistant": "✦  AI Assistant",
+    "Analytics": "▥  Analytics",
     "Settings": "⚙  Settings",
     "About": "ⓘ  About",
 }
@@ -711,7 +757,7 @@ with st.sidebar:
     st.markdown('<div class="tl-sidebar-section">MAIN MENU</div>', unsafe_allow_html=True)
     selected_menu_page = st.radio(
         "MAIN MENU",
-        ["Overview", "Investigate", "Evidence Review", "Reports", "History", "Settings", "About"],
+        ["Overview", "Investigate", "Evidence Review", "Reports", "History", "AI Assistant", "Analytics", "Settings", "About"],
         format_func=lambda item: page_icons[item],
         label_visibility="collapsed",
         key="workspace_page",
@@ -781,14 +827,25 @@ def render_evidence_for_claim(claim, index):
             if not source_url.strip() or not excerpt.strip():
                 st.error("Source URL and evidence paragraph are required.")
             else:
-                st.session_state.evidence.append({
+                evidence_item = {
                     "claim": claim,
                     "title": title.strip() or "Untitled source",
                     "url": source_url.strip(),
                     "excerpt": excerpt.strip(),
                     "relation": relation,
                     "date": datetime.now().strftime("%d-%m-%Y %I:%M %p"),
-                })
+                }
+                st.session_state.evidence.append(evidence_item)
+                account = st.session_state.get("authenticated_user") or {}
+                investigation_id = st.session_state.get("current_investigation_id")
+                if account.get("id") and investigation_id:
+                    try:
+                        save_investigation_evidence(
+                            account["id"], account.get("username", "user"),
+                            investigation_id, evidence_item,
+                        )
+                    except Exception as error:
+                        st.warning("Evidence saved in this session, but persistence failed: " + str(error))
                 st.success("Evidence saved.")
                 st.rerun()
 
@@ -1058,6 +1115,7 @@ elif page == "Investigate":
                 text_value = pasted_text.strip()
                 text_hash = hashlib.sha256(text_value.encode("utf-8")).hexdigest()
                 reset_investigation(text_value, "Pasted text", text_hash)
+                persist_current_investigation("Pasted text", text_value)
                 st.success("Text added. You can now review it and find claims below.")
                 st.rerun()
             else:
@@ -1087,6 +1145,7 @@ elif page == "Investigate":
                             title = article_data.get("title") or webpage_url.strip()
                             page_hash = hashlib.sha256(page_text.encode("utf-8")).hexdigest()
                             reset_investigation(page_text, title, page_hash)
+                            persist_current_investigation(title, page_text)
                             st.success("Webpage text added. Review it below.")
                             st.rerun()
                         else:
@@ -1225,6 +1284,7 @@ elif page == "Investigate":
                     "characters": len(extracted),
                     "text": extracted,
                 })
+                persist_current_investigation(uploaded_file.name, extracted)
                 st.success("Text extraction completed.")
 
     # Extracted text review and claim investigation
@@ -1300,6 +1360,7 @@ elif page == "Investigate":
                     seen_claims.add(claim_text)
 
             st.session_state.claims = normalized_claims
+            persist_claims()
             st.session_state.selected_claims = [
                 item["claim"] for item in normalized_claims
             ]
