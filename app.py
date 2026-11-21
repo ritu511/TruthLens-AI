@@ -1413,9 +1413,6 @@ elif page == "Investigate":
             for index, claim in enumerate(selected, start=1):
                 render_evidence_for_claim(claim, index)
 
-            st.divider()
-            render_verification_dashboard()
-
             if st.session_state.evidence:
                 report_lines = []
                 for number, item in enumerate(
@@ -1485,6 +1482,9 @@ elif page == "Claim Verification":
                 for note in result["limitations"]:
                     st.caption("• " + note)
 
+        st.divider()
+        render_verification_dashboard()
+
 
 # -----------------------------------------------------------------------------
 # SOURCE CREDIBILITY CHECKER
@@ -1536,8 +1536,6 @@ elif page == "Evidence Review":
                 st.write(item.get('excerpt', ''))
                 if item.get('url'):
                     st.markdown(f"[Open source]({item['url']})")
-        st.divider()
-        render_verification_dashboard()
     else:
         st.info("No evidence has been saved yet. Open Investigate, identify claims and add source evidence.")
 
