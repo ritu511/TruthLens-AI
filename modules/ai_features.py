@@ -121,13 +121,24 @@ def chat_answer(question, context=""):
         except Exception:
             pass
     low = question.lower()
+    if ("supporting evidence" in low or "contradicting evidence" in low
+            or ("difference" in low and "evidence" in low)):
+        return (
+            "**Supporting evidence** is information that backs up a claim. "
+            "For example, an official record that confirms a stated date or identity.\\n\\n"
+            "**Contradicting evidence** is information that conflicts with a claim. "
+            "For example, an official record showing a different date or identity.\\n\\n"
+            "**Important:** A source being labelled Supports or Contradicts is a reviewer-selected "
+            "relationship, not an automatic proof. Check the original source, its date, context "
+            "and independence before drawing a conclusion."
+        )
     if any(term in low for term in ("claim", "verify", "verification", "true", "false")):
         return (
             "I can help review the evidence saved in this investigation. "
             "Open the AI Claim Assessment section to see supporting, contradicting, "
             "context-only and unclear evidence. I cannot confirm truth from a headline "
             "or source-domain label alone. "
-            + ("\\n\\nCurrent investigation context: " + context[:1800] if context else "")
+            + ("\\n\\nI can use the saved claims and evidence in this investigation if you ask about them specifically." if context else "")
         )
     if any(term in low for term in ("source", "website", "domain", "credible")):
         return (
