@@ -24,6 +24,7 @@ from modules.cloud_store import (
     save_investigation, list_user_investigations,
     save_investigation_evidence, update_investigation_claims,
     analytics_for_user, delete_user_investigation, get_user_investigation,
+    update_investigation_content,
     list_investigation_evidence, supabase_configured,
 )
 from modules.ai_features import assess_claim_with_context, ai_claim_review, chat_answer
@@ -1322,6 +1323,18 @@ elif page == "Investigate":
             st.session_state.selected_claims = []
             st.session_state.evidence = []
             st.session_state.pop("dashboard_claim_selection", None)
+            account = st.session_state.get("authenticated_user") or {}
+            investigation_id = st.session_state.get("current_investigation_id")
+            if account.get("id") and investigation_id:
+                try:
+                    update_investigation_content(
+                        account["id"], account.get("username", "user"),
+                        investigation_id,
+                        st.session_state.get("current_filename") or "Edited investigation",
+                        edited_text,
+                    )
+                except Exception as error:
+                    st.warning("Edited text could not be saved to history: " + str(error))
 
         download_columns = st.columns(2)
         download_columns[0].download_button(
