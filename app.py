@@ -1736,7 +1736,6 @@ elif page == "Analytics":
         total_claims = int(stats.get("claims", 0) or 0)
         total_evidence = int(stats.get("evidence", 0) or 0)
 
-        # Compact overview: all figures come from the account-level analytics query.
         st.markdown("#### Your workspace at a glance")
         metric_cols = st.columns(4)
         metric_cols[0].metric("Investigations", total_investigations)
@@ -1752,32 +1751,65 @@ elif page == "Analytics":
         with left_col:
             st.markdown("#### Recent investigations")
             if history_rows:
+                visible_history = history_rows[:8]
                 analytics_rows = []
-                for row in history_rows[:8]:
-                    title = str(row.get("title") or "Untitled investigation")
-                    created = str(row.get("created_at") or "Date unavailable")
-                    claim_count = len(row.get("claims") or [])
+                for row in visible_history:
+                    body = row.get("extracted_text", row.get("text", "")) or ""
                     analytics_rows.append({
-                        "Investigation": title,
-                        "Created": created,
-                        "Claims": claim_count,
+                        "Investigation": str(row.get("title") or "Untitled investigation"),
+                        "Created": str(row.get("created_at") or "Date unavailable"),
+                        "Claims": len(row.get("claims") or []),
+                        "Characters": len(body),
                     })
-                st.dataframe(
+                table_event = st.dataframe(
                     pd.DataFrame(analytics_rows),
                     use_container_width=True,
                     hide_index=True,
+                    on_select="rerun",
+                    selection_mode="single-row",
+                    key="analytics_investigation_table",
                     column_config={
                         "Investigation": st.column_config.TextColumn("Investigation", width="large"),
                         "Created": st.column_config.TextColumn("Created", width="medium"),
                         "Claims": st.column_config.NumberColumn("Claims", format="%d", width="small"),
+                        "Characters": st.column_config.NumberColumn("Characters", format="%d", width="small"),
                     },
                 )
+                selected_rows = table_event.selection.rows if table_event and table_event.selection else []
+                selected_index = selected_rows[0] if selected_rows else None
+                if selected_index is not None and selected_index < len(visible_history):
+                    selected_item = visible_history[selected_index]
+                    st.caption("Selected: " + str(selected_item.get("title") or "Untitled investigation"))
+                    if st.button("Open selected investigation", type="primary", use_container_width=True, key="analytics_open_selected"):
+                        restored = get_user_investigation(
+                            account["id"], account.get("username", "user"), selected_item.get("id")
+                        )
+                        if restored:
+                            st.session_state.extracted_text = restored.get("extracted_text", restored.get("text", "")) or ""
+                            st.session_state.current_filename = restored.get("source_name") or restored.get("title", "Restored investigation")
+                            st.session_state.current_investigation_id = restored.get("id")
+                            st.session_state.claims = restored.get("claims") or []
+                            st.session_state.selected_claims = [
+                                row.get("claim", "") if isinstance(row, dict) else str(row)
+                                for row in st.session_state.claims
+                            ]
+                            st.session_state.evidence = list_investigation_evidence(
+                                account["id"], account.get("username", "user"), restored.get("id")
+                            )
+                            st.session_state["pending_workspace_page"] = "Investigate"
+                            st.rerun()
+                        else:
+                            st.error("This investigation could not be opened. Please try again from History.")
+                else:
+                    st.caption("Select a row to highlight its chart bar and enable opening that investigation.")
             else:
                 st.info("No saved investigations yet. Start an investigation to build your activity history.")
 
         with right_col:
             st.markdown("#### Claims by investigation")
             if history_rows:
+                import altair as alt
+
                 chart_rows = []
                 for index, row in enumerate(history_rows[:8], start=1):
                     raw_title = str(row.get("title") or "Untitled")
@@ -1785,10 +1817,29 @@ elif page == "Analytics":
                     chart_rows.append({
                         "Investigation": f"{index}. {short_title}",
                         "Claims": len(row.get("claims") or []),
+                        "Row": index - 1,
                     })
-                chart_df = pd.DataFrame(chart_rows).set_index("Investigation")
-                st.bar_chart(chart_df, height=300, use_container_width=True)
-                st.caption("Showing your 8 most recent saved investigations.")
+
+                selected_chart_row = None
+                if 'selected_index' in locals() and selected_index is not None:
+                    selected_chart_row = selected_index
+
+                chart_df = pd.DataFrame(chart_rows)
+                base = alt.Chart(chart_df).mark_bar(cornerRadiusTopLeft=4, cornerRadiusTopRight=4).encode(
+                    x=alt.X("Investigation:N", sort=None, axis=alt.Axis(labelAngle=-45, title=None)),
+                    y=alt.Y("Claims:Q", title="Candidate claims", scale=alt.Scale(nice=True)),
+                    color=alt.condition(
+                        alt.datum.Row == selected_chart_row if selected_chart_row is not None else alt.value(False),
+                        alt.value("#00AABD"),
+                        alt.value("#2474C6"),
+                    ),
+                    tooltip=["Investigation", "Claims"],
+                ).properties(height=300)
+                st.altair_chart(base, use_container_width=True)
+                if selected_chart_row is not None:
+                    st.caption("Highlighted bar matches the selected investigation in the table.")
+                else:
+                    st.caption("Select an investigation on the left to highlight its bar here.")
             else:
                 st.info("Claim activity will appear here after you save an investigation.")
 
