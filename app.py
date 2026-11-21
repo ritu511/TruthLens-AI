@@ -656,19 +656,23 @@ if active_theme == "Dark":
 
 
 st.markdown("""<style>
-    /* Sidebar structure refresh — uses the existing aqua-blue theme tokens */
-    .tl-sidebar-brand{display:flex;align-items:center;gap:11px;padding:8px 4px 18px}
-    .tl-sidebar-mark{width:42px;height:42px;display:grid;place-items:center;border-radius:13px;background:#00aabd;color:#fff!important;font-size:20px;font-weight:800;box-shadow:0 4px 12px rgba(0,103,125,.2)}
+    /* AttendEase-inspired sidebar structure; keep TruthLens aqua-blue palette */
+    .tl-sidebar-brand{display:flex;align-items:center;gap:11px;padding:12px 7px 25px}
+    .tl-sidebar-mark{width:42px;height:42px;flex:0 0 42px;display:grid;place-items:center;border-radius:12px;background:#00aabd;color:#fff!important;font-size:18px;font-weight:800}
     .tl-sidebar-name{font-size:1.05rem;font-weight:800;letter-spacing:-.035em;color:#effcff!important}
-    .tl-sidebar-tag{font-size:.7rem;color:#b8edf4!important;margin-top:2px}
-    .tl-sidebar-section{font-size:.66rem;font-weight:800;letter-spacing:.13em;color:#b8edf4!important;margin:15px 0 7px;padding-left:8px}
-    .tl-sidebar-foot{border:1px solid #27899a;border-radius:12px;background:rgba(0,40,52,.16);padding:12px;margin-top:14px}
-    .tl-sidebar-user{font-size:.82rem;font-weight:700;color:#effcff!important;overflow-wrap:anywhere}
-    .tl-sidebar-hint{font-size:.68rem;line-height:1.45;color:#b8edf4!important;margin-top:3px}
+    .tl-sidebar-tag{font-size:.68rem;color:#b8edf4!important;margin-top:3px}
+    .tl-sidebar-section{font-size:.65rem;font-weight:800;letter-spacing:.14em;color:#a8e5ed!important;margin:12px 0 12px;padding:0 10px}
+    .tl-sidebar-profile{border-top:1px solid #27899a;margin-top:24px;padding:17px 6px 4px;display:flex;align-items:center;gap:10px}
+    .tl-sidebar-avatar{width:36px;height:36px;flex:0 0 36px;border-radius:50%;display:grid;place-items:center;background:#00aabd;color:#fff!important;font-size:14px;font-weight:800}
+    .tl-sidebar-user{font-size:.82rem;font-weight:750;color:#effcff!important;line-height:1.3;overflow-wrap:anywhere}
+    .tl-sidebar-role{font-size:.68rem;color:#b8edf4!important;margin-top:3px}
     [data-testid="stSidebar"] [data-testid="stRadio"] [role="radiogroup"]{gap:5px!important}
-    [data-testid="stSidebar"] [data-testid="stRadio"] [role="radio"]{min-height:43px!important;padding:9px 12px!important;border-radius:10px!important}
-    [data-testid="stSidebar"] [data-testid="stRadio"] [role="radio"][aria-checked="true"]{background:#00aabd!important;box-shadow:inset 3px 0 0 #b8f7fb,0 3px 9px rgba(0,40,52,.12)!important}
-    [data-testid="stSidebar"] [data-testid="stRadio"] [role="radio"] p{font-weight:600!important}
+    [data-testid="stSidebar"] [data-testid="stRadio"] [role="radio"]{min-height:43px!important;padding:9px 12px!important;border-radius:10px!important;background:transparent!important;color:#effcff!important}
+    [data-testid="stSidebar"] [data-testid="stRadio"] [role="radio"]>div:first-child{display:none!important}
+    [data-testid="stSidebar"] [data-testid="stRadio"] [role="radio"] p{font-size:.88rem!important;font-weight:600!important;color:#effcff!important;margin:0!important}
+    [data-testid="stSidebar"] [data-testid="stRadio"] [role="radio"]:hover{background:#087f91!important}
+    [data-testid="stSidebar"] [data-testid="stRadio"] [role="radio"][aria-checked="true"]{background:#00aabd!important;box-shadow:inset 3px 0 0 #b8f7fb!important}
+    [data-testid="stSidebar"] [data-testid="stRadio"] [role="radio"][aria-checked="true"] p{color:#fff!important;font-weight:750!important}
 </style>""", unsafe_allow_html=True)
 
 # SIDEBAR NAVIGATION
@@ -694,18 +698,20 @@ with st.sidebar:
         '<div class="tl-sidebar-tag">Content investigation workspace</div></div></div>',
         unsafe_allow_html=True,
     )
-    st.markdown('<div class="tl-sidebar-section">WORKSPACE</div>', unsafe_allow_html=True)
+    st.markdown('<div class="tl-sidebar-section">MAIN MENU</div>', unsafe_allow_html=True)
     page = st.radio(
-        "WORKSPACE",
+        "MAIN MENU",
         ["Overview", "Investigate", "Evidence Review", "Reports", "History", "Profile", "Settings", "About"],
         format_func=lambda item: page_icons[item],
         label_visibility="collapsed",
         key="workspace_page",
     )
+    username = html.escape(st.session_state.authenticated_user.get("username", "User"))
+    initials = html.escape((st.session_state.authenticated_user.get("username", "U")[:1] or "U").upper())
     st.markdown(
-        '<div class="tl-sidebar-foot"><div class="tl-sidebar-user">◉  '
-        + html.escape(st.session_state.authenticated_user.get("username", "User"))
-        + '</div><div class="tl-sidebar-hint">Signed in to your private workspace</div></div>',
+        '<div class="tl-sidebar-profile"><div class="tl-sidebar-avatar">' + initials +
+        '</div><div><div class="tl-sidebar-user">' + username +
+        '</div><div class="tl-sidebar-role">TruthLens AI User</div></div></div>',
         unsafe_allow_html=True,
     )
     if st.button("↪  Sign out", use_container_width=True):
