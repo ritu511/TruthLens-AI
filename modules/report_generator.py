@@ -281,3 +281,108 @@ def generate_pdf_report(report_data):
     buffer.seek(0)
 
     return buffer.getvalue()
+
+
+def generate_investigation_pdf(report_data):
+    """Generate a complete multi-claim investigation report."""
+    if not isinstance(report_data, dict):
+        raise ValueError("Invalid investigation report data.")
+
+    buffer = BytesIO()
+    document = SimpleDocTemplate(
+        buffer, pagesize=A4, rightMargin=18 * mm, leftMargin=18 * mm,
+        topMargin=18 * mm, bottomMargin=18 * mm,
+    )
+    styles = getSampleStyleSheet()
+    styles.add(ParagraphStyle(
+        name="InvestigationTitle", parent=styles["Title"],
+        fontSize=21, leading=26, textColor=colors.HexColor("#007F91"),
+        alignment=TA_CENTER, spaceAfter=8,
+    ))
+    styles.add(ParagraphStyle(
+        name="InvestigationSection", parent=styles["Heading2"],
+        fontSize=13, leading=17, textColor=colors.HexColor("#007F91"),
+        spaceBefore=13, spaceAfter=7,
+    ))
+    styles.add(ParagraphStyle(
+        name="InvestigationBody", parent=styles["BodyText"],
+        fontSize=9, leading=13, spaceAfter=5, wordWrap="CJK",
+    ))
+
+    def safe(value):
+        return escape(str(value if value is not None else ""))
+
+    story = [
+        Paragraph("TRUTHLENS AI", styles["InvestigationTitle"]),
+        Paragraph("Complete Content Investigation Report", styles["Heading3"]),
+        Spacer(1, 8),
+        HRFlowable(width="100%", color=colors.HexColor("#9DDCE5")),
+        Spacer(1, 10),
+        Paragraph("Investigation: " + safe(report_data.get("title", "Untitled")), styles["InvestigationBody"]),
+        Paragraph("Generated: " + safe(datetime.now().strftime("%d %B %Y, %I:%M %p")), styles["InvestigationBody"]),
+        Paragraph("Source: " + safe(report_data.get("source_name", "Not specified")), styles["InvestigationBody"]),
+        Paragraph("Important: This report summarizes collected material and user-selected evidence relationships. It is not an independent determination of truth.", styles["InvestigationBody"]),
+    ]
+
+    claims = report_data.get("claims", [])
+    if not isinstance(claims, list):
+        claims = []
+    evidence = report_data.get("evidence", [])
+    if not isinstance(evidence, list):
+        evidence = []
+
+    story.append(Paragraph("1. Investigation overview", styles["InvestigationSection"]))
+    story.append(Paragraph("Candidate claims: " + str(len(claims)), styles["InvestigationBody"]))
+    story.append(Paragraph("Evidence records: " + str(len(evidence)), styles["InvestigationBody"]))
+
+    story.append(Paragraph("2. Candidate claims and evidence assessment", styles["InvestigationSection"]))
+    if claims:
+        for index, item in enumerate(claims, start=1):
+            claim = item.get("claim", "") if isinstance(item, dict) else str(item)
+            story.append(Paragraph(f"Claim {index}: " + safe(claim), styles["InvestigationBody"]))
+            related = [row for row in evidence if isinstance(row, dict) and row.get("claim") == claim]
+            counts = {"Supports": 0, "Contradicts": 0, "Context only": 0, "Unclear": 0}
+            for row in related:
+                relation = row.get("relation", "Unclear")
+                if relation not in counts:
+                    relation = "Unclear"
+                counts[relation] += 1
+            story.append(Paragraph("Evidence counts: " + safe(", ".join(f"{key}: {value}" for key, value in counts.items())), styles["InvestigationBody"]))
+            if not related:
+                story.append(Paragraph("No evidence records were saved for this claim.", styles["InvestigationBody"]))
+    else:
+        story.append(Paragraph("No candidate claims were saved.", styles["InvestigationBody"]))
+
+    story.append(Paragraph("3. Collected evidence and sources", styles["InvestigationSection"]))
+    if evidence:
+        for index, item in enumerate(evidence, start=1):
+            if not isinstance(item, dict):
+                continue
+            story.append(Paragraph(f"Evidence {index}: " + safe(item.get("title", "Untitled source")), styles["Heading4"]))
+            story.append(Paragraph("Claim: " + safe(item.get("claim", "")), styles["InvestigationBody"]))
+            story.append(Paragraph("Relationship: " + safe(item.get("relation", "Unclear")), styles["InvestigationBody"]))
+            story.append(Paragraph("URL: " + safe(item.get("url", "")), styles["InvestigationBody"]))
+            story.append(Paragraph("Excerpt: " + safe(item.get("excerpt", "")), styles["InvestigationBody"]))
+            story.append(Spacer(1, 4))
+    else:
+        story.append(Paragraph("No evidence records were collected.", styles["InvestigationBody"]))
+
+    story.append(Paragraph("4. Methodology and limitations", styles["InvestigationSection"]))
+    for note in [
+        "Candidate claim extraction identifies statements for review; it does not verify them.",
+        "Evidence relationship labels are selected by the user and may require correction.",
+        "Source domain and HTTPS indicators do not establish factual accuracy or editorial reliability.",
+        "Lexical overlap is not semantic proof. Review original sources and seek independent corroboration.",
+    ]:
+        story.append(Paragraph("• " + safe(note), styles["InvestigationBody"]))
+
+    def footer(canvas, doc):
+        canvas.saveState()
+        canvas.setFont("Helvetica", 8)
+        canvas.setFillColor(colors.HexColor("#64808A"))
+        canvas.drawRightString(A4[0] - 18 * mm, 10 * mm, f"TruthLens AI · Page {doc.page}")
+        canvas.restoreState()
+
+    document.build(story, onFirstPage=footer, onLaterPages=footer)
+    buffer.seek(0)
+    return buffer.getvalue()
