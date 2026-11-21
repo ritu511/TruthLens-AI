@@ -877,6 +877,9 @@ def render_evidence_for_claim(claim, index):
                             "HTTPS" if source_result.get("https") else "Not HTTPS",
                         )
                         st.caption(f"Domain: {source_result.get('domain', 'Unknown')}")
+                        st.caption("Technical checks: " + source_result.get("indicator_level", "Not assessed"))
+                        for warning in source_result.get("risk_indicators", []):
+                            st.warning(warning)
 
                         with st.expander("Source indicators and limitations"):
                             for indicator in source_result.get("indicators", []):
@@ -955,6 +958,14 @@ def render_verification_dashboard():
                 )
                 st.caption("Source categories: " + category_summary)
 
+            smart_assessment = assess_claim_with_context(claim, st.session_state.evidence)
+            with st.expander("AI-assisted evidence assessment", expanded=False):
+                st.markdown(f"**Assessment:** {smart_assessment['conclusion']}")
+                st.write(smart_assessment["explanation"])
+                st.caption("This is an evidence summary, not an independent true/false verdict.")
+                for source_row in smart_assessment["sources"]:
+                    st.markdown(f"**{source_row['title']}** · {source_row['relation']}")
+                    st.caption(f"{source_row['domain']} · {source_row['source_category']} · Text overlap: {source_row['text_overlap']}%")
             limitations = assessment.get("limitations", "")
             if limitations:
                 st.info(limitations)
@@ -1452,6 +1463,24 @@ elif page == "Reports":
     if not st.session_state.selected_claims:
         st.info("No claims selected yet. Complete the claim and evidence workflow first.")
     else:
+        full_report_data = {
+            "title": st.session_state.get("current_filename") or "Current investigation",
+            "source_name": st.session_state.get("current_filename") or "Current source",
+            "claims": st.session_state.selected_claims,
+            "evidence": st.session_state.evidence,
+        }
+        try:
+            full_pdf = generate_investigation_pdf(full_report_data)
+            st.download_button(
+                "Download complete investigation PDF",
+                data=full_pdf,
+                file_name="truthlens_complete_investigation.pdf",
+                mime="application/pdf",
+                type="primary",
+                use_container_width=True,
+            )
+        except Exception as error:
+            st.error("Could not generate complete investigation PDF: " + str(error))
         for number, claim in enumerate(st.session_state.selected_claims, start=1):
             result = analyze_evidence(claim, st.session_state.evidence)
             assessment = assess_claim(claim, st.session_state.evidence)
@@ -1486,41 +1515,121 @@ elif page == "Reports":
 # HISTORY
 # -----------------------------------------------------------------------------
 elif page == "History":
-    st.markdown(
-        '<div class="section-label">Past investigations</div>',
-        unsafe_allow_html=True,
-    )
+    st.markdown('<div class="section-label">Past investigations</div>', unsafe_allow_html=True)
     st.title("Investigation history")
+    account = st.session_state.authenticated_user
+    username = account.get("username", "user")
+    try:
+        saved_history = list_user_investigations(account["id"], username)
+    except Exception as error:
+        saved_history = []
+        st.error("Could not load saved history: " + str(error))
 
-    if st.session_state.history:
-        history_df = pd.DataFrame([
-            {
-                "Filename": item["filename"],
-                "Date": item["date"],
-                "Characters": item["characters"],
-            }
-            for item in st.session_state.history
-        ])
-        st.dataframe(
-            history_df, use_container_width=True, hide_index=True
-        )
-
-        for index, item in enumerate(reversed(st.session_state.history)):
-            with st.expander(f"{item['filename']} · {item['date']}"):
-                st.text_area(
-                    "Extracted content",
-                    item["text"],
-                    height=180,
-                    key=f"history_item_{index}",
-                )
-
-        if st.button("Clear extraction history"):
-            st.session_state.history = []
-            st.rerun()
+    if saved_history:
+        history_rows = []
+        for item in saved_history:
+            body = item.get("extracted_text", item.get("text", "")) or ""
+            history_rows.append({
+                "Investigation": item.get("title", "Untitled"),
+                "Date": item.get("created_at", "Date unavailable"),
+                "Characters": len(body),
+                "Claims": len(item.get("claims") or []),
+            })
+        st.dataframe(pd.DataFrame(history_rows), use_container_width=True, hide_index=True)
+        for index, item in enumerate(saved_history):
+            title = item.get("title", "Untitled investigation")
+            created = item.get("created_at", "Date unavailable")
+            with st.expander(f"{title} · {created}"):
+                saved_text = item.get("extracted_text", item.get("text", "")) or ""
+                st.caption(f"{len(saved_text):,} characters")
+                st.text_area("Extracted content", saved_text, height=180, key=f"saved_history_{index}")
+                saved_claims = item.get("claims") or []
+                if saved_claims:
+                    st.markdown("**Saved candidate claims**")
+                    for claim_item in saved_claims:
+                        st.write(claim_item.get("claim", "") if isinstance(claim_item, dict) else str(claim_item))
+                if st.button("Delete this investigation", key=f"delete_history_{index}"):
+                    if delete_user_investigation(account["id"], username, item.get("id")):
+                        st.success("Investigation deleted.")
+                        st.rerun()
+                    else:
+                        st.warning("This investigation could not be deleted.")
     else:
-        st.info(
-            "No extraction history yet. Start by adding a source in Investigate."
-        )
+        st.info("No saved investigations yet. Add and extract content in Investigate to build your history.")
+    if not supabase_configured():
+        st.caption("History is using the existing SQLite database on this deployment. Configure Supabase to make it durable across hosting restarts.")
+
+
+# -----------------------------------------------------------------------------
+# AI ASSISTANT
+# -----------------------------------------------------------------------------
+elif page == "AI Assistant":
+    st.markdown('<div class="section-label">TRUTHLENS AI / RESEARCH ASSISTANT</div>', unsafe_allow_html=True)
+    st.title("AI Assistant")
+    st.caption("Ask about claim assessment, source indicators, evidence collection, reports and your active investigation.")
+    if supabase_configured():
+        st.success("Cloud persistence is configured. Chat responses use Hugging Face only if HF_TOKEN is configured.")
+    else:
+        st.info("Local assistant mode is available without paid APIs. Add HF_TOKEN in Streamlit Secrets for optional open-ended model responses.")
+    context_parts = []
+    if st.session_state.get("extracted_text"):
+        context_parts.append("Current source: " + st.session_state.get("current_filename", "Untitled"))
+        context_parts.append("Extracted text: " + st.session_state.extracted_text[:5000])
+    if st.session_state.get("selected_claims"):
+        context_parts.append("Selected claims: " + " | ".join(st.session_state.selected_claims[:12]))
+    if st.session_state.get("evidence"):
+        context_parts.append("Evidence: " + str(st.session_state.evidence[:12]))
+    chat_context = "\\n".join(context_parts)
+    for message in st.session_state.chat_messages:
+        with st.chat_message(message["role"]):
+            st.markdown(message["content"])
+    question = st.chat_input("Ask TruthLens AI about your investigation...")
+    if question:
+        st.session_state.chat_messages.append({"role": "user", "content": question})
+        answer = chat_answer(question, chat_context)
+        st.session_state.chat_messages.append({"role": "assistant", "content": answer})
+        st.rerun()
+    if st.button("Clear chat", key="clear_truthlens_chat"):
+        st.session_state.chat_messages = []
+        st.rerun()
+
+
+# -----------------------------------------------------------------------------
+# ANALYTICS DASHBOARD
+# -----------------------------------------------------------------------------
+elif page == "Analytics":
+    st.markdown('<div class="section-label">WORKSPACE INSIGHTS</div>', unsafe_allow_html=True)
+    st.title("Analytics dashboard")
+    st.caption("A summary of investigations and evidence saved to your account.")
+    account = st.session_state.authenticated_user
+    try:
+        stats = analytics_for_user(account["id"], account.get("username", "user"))
+        history_rows = stats.get("recent", [])
+        total_claims = stats.get("claims", 0)
+        total_evidence = stats.get("evidence", 0)
+        if not supabase_configured():
+            total_claims = sum(len(row.get("claims") or []) for row in history_rows)
+            total_evidence = len(st.session_state.evidence)
+        metric_cols = st.columns(4)
+        metric_cols[0].metric("Investigations", stats.get("investigations", 0))
+        metric_cols[1].metric("Candidate claims", total_claims)
+        metric_cols[2].metric("Evidence in active session" if not supabase_configured() else "Evidence records", total_evidence)
+        metric_cols[3].metric("Storage", stats.get("storage", "Unknown"))
+        if history_rows:
+            analytics_rows = [{
+                "Investigation": row.get("title", "Untitled"),
+                "Date": row.get("created_at", "Date unavailable"),
+                "Claims": len(row.get("claims") or []),
+            } for row in history_rows]
+            st.subheader("Recent activity")
+            st.dataframe(pd.DataFrame(analytics_rows), use_container_width=True, hide_index=True)
+            st.bar_chart(pd.DataFrame(analytics_rows).set_index("Investigation")[["Claims"]])
+        else:
+            st.info("No saved investigation activity yet.")
+        if not supabase_configured():
+            st.warning("For reliable cross-session analytics on Streamlit hosting, configure Supabase using supabase/schema.sql and Streamlit Secrets.")
+    except Exception as error:
+        st.error("Analytics could not be loaded: " + str(error))
 
 
 # -----------------------------------------------------------------------------
