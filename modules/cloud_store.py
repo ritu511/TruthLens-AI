@@ -108,7 +108,15 @@ def get_user_investigation(user_id, username, investigation_id):
         )
         return rows[0] if rows else None
     try:
-        return get_analysis(user_id, int(investigation_id))
+        result = get_analysis(user_id, int(investigation_id))
+        if not result:
+            return None
+        import json
+        try:
+            result["claims"] = json.loads(result.get("claims_json") or "[]")
+        except (TypeError, ValueError):
+            result["claims"] = []
+        return result
     except (TypeError, ValueError):
         return None
 
