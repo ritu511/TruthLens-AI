@@ -1,0 +1,146 @@
+"""Evidence-grounded claim assessment and optional free-tier chat completion.
+
+The default path is deterministic and works without an API key. It never
+converts evidence counts into a probability that a claim is true.
+"""
+import os
+import re
+from urllib.parse import urlparse
+
+import requests
+
+from modules.claim_assessment import assess_claim
+from modules.source_credibility import analyze_source
+
+
+def _words(value):
+    return set(re.findall(r"[a-z0-9\\u0900-\\u097f]{2,}", str(value or "").lower()))
+
+
+def assess_claim_with_context(claim, evidence):
+    evidence = [item for item in (evidence or []) if isinstance(item, dict)]
+    base = assess_claim(claim, evidence)
+    rows = []
+    for item in evidence:
+        source = analyze_source(item.get("url", ""))
+        excerpt_words = _words(item.get("excerpt", ""))
+        claim_words = _words(claim)
+        overlap = round(100 * len(claim_words & excerpt_words) / max(1, len(claim_words | excerpt_words)))
+        rows.append({
+            "title": item.get("title") or "Untitled source",
+            "url": item.get("url", ""),
+            "relation": item.get("relation", "Unclear"),
+            "domain": source.get("domain", "Unknown"),
+            "source_category": source.get("category", "Unknown"),
+            "https": bool(source.get("https")),
+            "text_overlap": overlap,
+        })
+    support = base["counts"]["Supports"]
+    contradict = base["counts"]["Contradicts"]
+    if not evidence:
+        conclusion = "Not enough evidence collected"
+        explanation = "Add independently reviewed sources before drawing a conclusion."
+    elif support and contradict:
+        conclusion = "Mixed evidence"
+        explanation = "The saved evidence contains both supporting and contradicting relationships."
+    elif support:
+        conclusion = "Supporting evidence recorded"
+        explanation = "The saved evidence is marked as supporting. This is not independent proof."
+    elif contradict:
+        conclusion = "Contradicting evidence recorded"
+        explanation = "The saved evidence is marked as contradicting. This is not independent proof."
+    else:
+        conclusion = "Inconclusive"
+        explanation = "No source has been marked as clearly supporting or contradicting the claim."
+    return {
+        "claim": claim,
+        "conclusion": conclusion,
+        "explanation": explanation,
+        "counts": base["counts"],
+        "source_count": len(evidence),
+        "sources": rows,
+        "limitations": [
+            "Evidence relationships are user-selected and require independent review.",
+            "Text overlap is not semantic entailment or proof of truth.",
+            "HTTPS and domain categories are technical indicators, not guarantees of credibility.",
+            "This tool does not issue a definitive true/false verdict.",
+        ],
+    }
+
+
+def _hf_token():
+    token = os.getenv("HF_TOKEN", "")
+    try:
+        import streamlit as st
+        token = st.secrets.get("HF_TOKEN", token) or token
+    except Exception:
+        pass
+    return token
+
+
+def chat_answer(question, context=""):
+    """Use Hugging Face's compatible chat endpoint when configured.
+
+    Without a token, provide a transparent evidence-aware local helper response.
+    """
+    question = str(question or "").strip()
+    if not question:
+        return "Please enter a question."
+    token = _hf_token()
+    if token:
+        try:
+            response = requests.post(
+                "https://router.huggingface.co/v1/chat/completions",
+                headers={"Authorization": f"Bearer {token}"},
+                json={
+                    "model": "Qwen/Qwen2.5-7B-Instruct",
+                    "messages": [
+                        {
+                            "role": "system",
+                            "content": (
+                                "You are TruthLens AI's research assistant. "
+                                "Use only the supplied investigation context for factual claims. "
+                                "If context is insufficient, say so. Never declare a claim true "
+                                "or false without reliable evidence. Explain uncertainty."
+                            ),
+                        },
+                        {
+                            "role": "user",
+                            "content": f"Investigation context:\\n{context[:12000]}\\n\\nQuestion: {question}",
+                        },
+                    ],
+                    "temperature": 0.2,
+                    "max_tokens": 500,
+                },
+                timeout=35,
+            )
+            response.raise_for_status()
+            answer = response.json()["choices"][0]["message"]["content"]
+            if answer:
+                return answer
+        except Exception:
+            pass
+    low = question.lower()
+    if any(term in low for term in ("claim", "verify", "verification", "true", "false")):
+        return (
+            "I can help review the evidence saved in this investigation. "
+            "Open the AI Claim Assessment section to see supporting, contradicting, "
+            "context-only and unclear evidence. I cannot confirm truth from a headline "
+            "or source-domain label alone. "
+            + ("\\n\\nCurrent investigation context: " + context[:1800] if context else "")
+        )
+    if any(term in low for term in ("source", "website", "domain", "credible")):
+        return (
+            "Use Source Credibility to inspect the URL, HTTPS connection and domain category. "
+            "These are preliminary technical indicators, not a reputation score or proof "
+            "that an article is accurate."
+        )
+    if any(term in low for term in ("report", "pdf", "download")):
+        return "Open Reports to generate a downloadable PDF summary of the current investigation."
+    if any(term in low for term in ("history", "previous", "saved")):
+        return "Open Investigation History to view saved investigations. Cloud persistence requires Supabase configuration."
+    return (
+        "I am the local TruthLens research helper. I can guide you through claim assessment, "
+        "source indicators, evidence collection, reports and investigation history. "
+        "For open-ended AI responses, configure an optional Hugging Face token in Streamlit Secrets."
+    )
