@@ -124,13 +124,17 @@ def chat_answer(question, context=""):
     if ("supporting evidence" in low or "contradicting evidence" in low
             or ("difference" in low and "evidence" in low)):
         return (
-            "**Supporting evidence** is information that backs up a claim. "
-            "For example, an official record that confirms a stated date or identity.\\n\\n"
-            "**Contradicting evidence** is information that conflicts with a claim. "
-            "For example, an official record showing a different date or identity.\\n\\n"
-            "**Important:** A source being labelled Supports or Contradicts is a reviewer-selected "
-            "relationship, not an automatic proof. Check the original source, its date, context "
-            "and independence before drawing a conclusion."
+            "**Supporting evidence**\\n\\n"
+            "Information that backs up a claim. For example, an official record that confirms "
+            "a stated date or identity.\\n\\n"
+            "**Contradicting evidence**\\n\\n"
+            "Information that conflicts with a claim. For example, an official record showing "
+            "a different date or identity.\\n\\n"
+            "---\\n\\n"
+            "**Important**\\n\\n"
+            "A source being labelled Supports or Contradicts is a reviewer-selected relationship, "
+            "not automatic proof. Check the original source, its date, context and independence "
+            "before drawing a conclusion."
         )
     if any(term in low for term in ("claim", "verify", "verification", "true", "false")):
         return (
