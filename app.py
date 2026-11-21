@@ -1568,8 +1568,26 @@ elif page == "Reports":
         except Exception as error:
             st.error("Could not generate complete investigation PDF: " + str(error))
         for number, claim in enumerate(st.session_state.selected_claims, start=1):
-            result = analyze_evidence(claim, st.session_state.evidence)
-            assessment = assess_claim(claim, st.session_state.evidence)
+            # Build the PDF from the evidence records themselves so the exported
+            # report cannot silently omit a saved item due to minor text spacing.
+            def _claim_key(value):
+                return " ".join(str(value or "").split()).casefold()
+
+            claim_evidence = [
+                item for item in st.session_state.evidence
+                if isinstance(item, dict)
+                and _claim_key(item.get("claim")) == _claim_key(claim)
+            ]
+            report_counts = {
+                "Supports": 0, "Contradicts": 0,
+                "Context only": 0, "Unclear": 0,
+            }
+            for item in claim_evidence:
+                relation = item.get("relation", "Unclear")
+                report_counts[relation if relation in report_counts else "Unclear"] += 1
+
+            result = analyze_evidence(claim, claim_evidence)
+            assessment = assess_claim(claim, claim_evidence)
             with st.container(border=True):
                 st.markdown(f"**Claim {number}**")
                 st.write(claim)
@@ -1577,8 +1595,8 @@ elif page == "Reports":
                 report_data = {
                     "claim": claim,
                     "status": assessment.get("status", result.get("status", "Not assessed")),
-                    "counts": result.get("counts", {}),
-                    "sources": result.get("sources", []),
+                    "counts": report_counts,
+                    "sources": claim_evidence,
                     "unique_domains": assessment.get("unique_domains", 0),
                     "domains": assessment.get("domains", []),
                 }
