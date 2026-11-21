@@ -64,7 +64,7 @@ def list_analyses(user_id):
     with _db() as conn:
         rows = conn.execute(
             """
-            SELECT id, title, text, created_at
+            SELECT id, title, text, created_at, claims_json
             FROM investigations
             WHERE user_id = ?
             ORDER BY id DESC
