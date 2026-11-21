@@ -1748,7 +1748,7 @@ elif page == "Analytics":
 
         st.divider()
         if history_rows:
-            visible_history = history_rows[:8]
+            visible_history = history_rows[:30]
             selection_key = "analytics_selected_investigation_indexes"
             if selection_key not in st.session_state:
                 st.session_state[selection_key] = []
@@ -1759,7 +1759,7 @@ elif page == "Analytics":
             st.session_state[selection_key] = selected_rows
 
             st.markdown("#### Recent investigations")
-            st.caption("Tap an investigation to select it. Select multiple files to compare their claim counts.")
+            st.caption("Showing up to 30 recent investigations. Tap cards to compare one or more files; the chart expands vertically as needed.")
 
             # Touch-friendly selectable cards: no dataframe selection checkboxes.
             for row_start in range(0, len(visible_history), 2):
@@ -1834,8 +1834,12 @@ elif page == "Analytics":
             chart_rows = []
             for index, item in enumerate(visible_history):
                 title = str(item.get("title") or "Untitled investigation")
+                created = str(item.get("created_at") or "")
+                chart_label = f"{index + 1:02d} · {title}"
+                if created:
+                    chart_label += f" · {created[:16]}"
                 chart_rows.append({
-                    "Investigation": title,
+                    "Investigation": chart_label,
                     "Claims": len(item.get("claims") or []),
                     "Selected": index in selected_set,
                 })
@@ -1848,13 +1852,13 @@ elif page == "Analytics":
                     "Investigation:N",
                     sort="-x",
                     title=None,
-                    axis=alt.Axis(labelLimit=260, labelFontSize=12, ticks=False, domain=False),
+                    axis=alt.Axis(labelLimit=230, labelFontSize=11, labelPadding=8, ticks=False, domain=False),
                 ),
                 x=alt.X(
                     "Claims:Q",
                     title="Candidate claims",
-                    scale=alt.Scale(domainMin=0, nice=True),
-                    axis=alt.Axis(format="d", tickMinStep=1),
+                    scale=alt.Scale(domainMin=0, nice=True, zero=True),
+                    axis=alt.Axis(format="d", tickMinStep=1, grid=True),
                 ),
                 color=alt.condition(
                     alt.datum.Selected,
@@ -1867,8 +1871,8 @@ elif page == "Analytics":
                     alt.Tooltip("Selected:N", title="Selected"),
                 ],
             ).properties(
-                height=max(180, 48 * len(chart_rows)),
-                padding={"left": 8, "right": 18, "top": 12, "bottom": 12},
+                height=max(220, min(1040, 34 * len(chart_rows))),
+                padding={"left": 8, "right": 20, "top": 12, "bottom": 16},
             )
             st.altair_chart(chart, use_container_width=True)
             if selected_rows:
