@@ -673,6 +673,8 @@ st.markdown("""<style>
         min-height:38px!important;padding:5px 10px!important;font-weight:750!important;
     }
     [data-testid="stSidebar"] [data-testid="stButton"] button[key="sidebar_profile_button"] *{color:#effcff!important}
+    /* Profile remains a valid internal page option but is hidden from MAIN MENU. */
+    [data-testid="stSidebar"] [data-testid="stRadio"] [role="radiogroup"]>label:nth-child(6){display:none!important}
     [data-testid="stSidebar"] [data-testid="stRadio"] [role="radiogroup"]{gap:5px!important}
     [data-testid="stSidebar"] [data-testid="stRadio"] [role="radio"]{min-height:43px!important;padding:9px 12px!important;border-radius:10px!important;background:transparent!important;color:#effcff!important}
     [data-testid="stSidebar"] [data-testid="stRadio"] [role="radio"]>div:first-child{display:none!important}
@@ -694,6 +696,7 @@ page_icons = {
     "Evidence Review": "▤  Evidence Review",
     "Reports": "▧  Reports",
     "History": "◷  History",
+    "Profile": "",
     "Settings": "⚙  Settings",
     "About": "ⓘ  About",
 }
@@ -707,7 +710,7 @@ with st.sidebar:
     st.markdown('<div class="tl-sidebar-section">MAIN MENU</div>', unsafe_allow_html=True)
     page = st.radio(
         "MAIN MENU",
-        ["Overview", "Investigate", "Evidence Review", "Reports", "History", "Settings", "About"],
+        ["Overview", "Investigate", "Evidence Review", "Reports", "History", "Profile", "Settings", "About"],
         format_func=lambda item: page_icons[item],
         label_visibility="collapsed",
         key="workspace_page",
