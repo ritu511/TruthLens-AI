@@ -1522,27 +1522,59 @@ elif page == "Profile":
 
         st.divider()
 
+        st.markdown("""
+        <style>
+        .profile-form-heading{font-size:1.35rem;font-weight:750;color:#102b3a;margin:4px 0 18px}
+        div[data-testid="stForm"] label,div[data-testid="stForm"] label p{font-size:.92rem!important;font-weight:700!important;color:#536779!important}
+        div[data-testid="stForm"] input,div[data-testid="stForm"] textarea,
+        div[data-testid="stForm"] [data-baseweb="select"]>div{
+            min-height:52px!important;border-radius:13px!important;
+            border:1.5px solid #d7e2ea!important;background:#fff!important;
+            padding-left:14px!important;color:#17384a!important;
+        }
+        div[data-testid="stForm"] textarea{min-height:105px!important;padding-top:12px!important}
+        div[data-testid="stForm"] [data-testid="stDateInput"] input{min-height:52px!important}
+        div[data-testid="stForm"] [data-testid="stFormSubmitButton"] button{
+            min-height:50px!important;border-radius:11px!important;font-weight:750!important
+        }
+        @media(max-width:700px){div[data-testid="stForm"] .stHorizontalBlock{flex-wrap:wrap!important}}
+        </style>
+        """, unsafe_allow_html=True)
+
         with st.form("profile_form", clear_on_submit=False):
-            st.markdown("#### Personal information")
-            first_name = st.text_input("First name", value=profile.get("first_name", ""), placeholder="Enter first name")
-            middle_name = st.text_input("Middle name", value=profile.get("middle_name", ""), placeholder="Enter middle name (optional)")
-            last_name = st.text_input("Last name", value=profile.get("last_name", ""), placeholder="Enter last name")
-            email = st.text_input("Email address", value=profile.get("email", ""), placeholder="you@example.com")
-            phone = st.text_input("Phone number", value=profile.get("phone", ""), placeholder="+91 98765 43210")
+            st.markdown('<div class="profile-form-heading">Personal information</div>', unsafe_allow_html=True)
+            name_left, name_right = st.columns(2, gap="large")
+            with name_left:
+                first_name = st.text_input("First name", value=profile.get("first_name", ""), placeholder="Enter first name")
+            with name_right:
+                middle_name = st.text_input("Middle name", value=profile.get("middle_name", ""), placeholder="Enter middle name (optional)")
+
+            detail_left, detail_right = st.columns(2, gap="large")
+            with detail_left:
+                last_name = st.text_input("Last name", value=profile.get("last_name", ""), placeholder="Enter last name")
+            with detail_right:
+                email = st.text_input("Email address", value=profile.get("email", ""), placeholder="you@example.com")
+
             dob_value = None
             if profile.get("date_of_birth"):
                 try:
                     dob_value = date.fromisoformat(profile["date_of_birth"])
                 except ValueError:
                     dob_value = None
-            dob = st.date_input(
-                "Date of birth",
-                value=dob_value,
-                min_value=date(1900, 1, 1),
-                max_value=date.today(),
-                format="DD/MM/YYYY",
-            )
-            bio = st.text_area("About you", value=profile.get("bio", ""), height=95, placeholder="A short introduction (optional)")
+
+            contact_left, contact_right = st.columns(2, gap="large")
+            with contact_left:
+                phone = st.text_input("Phone number", value=profile.get("phone", ""), placeholder="+91 98765 43210")
+            with contact_right:
+                dob = st.date_input(
+                    "Date of birth",
+                    value=dob_value,
+                    min_value=date(1900, 1, 1),
+                    max_value=date.today(),
+                    format="DD/MM/YYYY",
+                )
+
+            bio = st.text_area("About you", value=profile.get("bio", ""), height=105, placeholder="A short introduction (optional)")
             save_profile = st.form_submit_button("Save changes", type="primary", use_container_width=True)
 
         if save_profile:
