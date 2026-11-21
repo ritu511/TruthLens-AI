@@ -106,7 +106,7 @@ def chat_answer(question, context=""):
                         },
                         {
                             "role": "user",
-                            "content": f"Investigation context:\\n{context[:12000]}\\n\\nQuestion: {question}",
+                            "content": f"Investigation context:\n{context[:12000]}\n\nQuestion: {question}",
                         },
                     ],
                     "temperature": 0.2,
@@ -124,14 +124,14 @@ def chat_answer(question, context=""):
     if ("supporting evidence" in low or "contradicting evidence" in low
             or ("difference" in low and "evidence" in low)):
         return (
-            "**Supporting evidence**\\n\\n"
+            "**Supporting evidence**\n\n"
             "Information that backs up a claim. For example, an official record that confirms "
-            "a stated date or identity.\\n\\n"
-            "**Contradicting evidence**\\n\\n"
+            "a stated date or identity.\n\n"
+            "**Contradicting evidence**\n\n"
             "Information that conflicts with a claim. For example, an official record showing "
-            "a different date or identity.\\n\\n"
-            "---\\n\\n"
-            "**Important**\\n\\n"
+            "a different date or identity.\n\n"
+            "---\n\n"
+            "**Important**\n\n"
             "A source being labelled Supports or Contradicts is a reviewer-selected relationship, "
             "not automatic proof. Check the original source, its date, context and independence "
             "before drawing a conclusion."
@@ -142,7 +142,7 @@ def chat_answer(question, context=""):
             "Open the AI Claim Assessment section to see supporting, contradicting, "
             "context-only and unclear evidence. I cannot confirm truth from a headline "
             "or source-domain label alone. "
-            + ("\\n\\nI can use the saved claims and evidence in this investigation if you ask about them specifically." if context else "")
+            + ("\n\nI can use the saved claims and evidence in this investigation if you ask about them specifically." if context else "")
         )
     if any(term in low for term in ("source", "website", "domain", "credible")):
         return (
@@ -172,7 +172,7 @@ def ai_claim_review(claim, evidence):
             "mode": "Local evidence assessment",
             "answer": fallback["conclusion"] + ". " + fallback["explanation"],
         }
-    evidence_text = "\\n".join(
+    evidence_text = "\n".join(
         f"- {item.get('title', 'Untitled')}; URL: {item.get('url', '')}; "
         f"relationship selected by reviewer: {item.get('relation', 'Unclear')}; "
         f"excerpt: {str(item.get('excerpt', ''))[:900]}"
@@ -197,7 +197,7 @@ def ai_claim_review(claim, evidence):
                     },
                     {
                         "role": "user",
-                        "content": f"Claim: {claim}\\nEvidence supplied:\\n{evidence_text or 'No evidence supplied.'}\\nExplain the evidence and its limitations.",
+                        "content": f"Claim: {claim}\nEvidence supplied:\n{evidence_text or 'No evidence supplied.'}\nExplain the evidence and its limitations.",
                     },
                 ],
                 "temperature": 0.1,
