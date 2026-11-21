@@ -6,7 +6,7 @@ from io import BytesIO
 
 import pandas as pd
 import streamlit as st
-from PIL import Image
+from PIL import Image, ImageDraw, ImageOps
 
 from modules.auth import init_db, register_user, authenticate_user
 from modules.user_profile import get_user_profile, save_user_profile, remove_user_avatar
@@ -1493,11 +1493,20 @@ elif page == "Profile":
         )
         st.divider()
 
-        st.markdown("#### Profile photo")
-        photo_col, upload_col = st.columns([1, 2], vertical_alignment="center")
+        st.markdown("""
+        <style>
+        .profile-photo-title{font-size:1.25rem;font-weight:750;color:#102b3a;margin:2px 0 14px}
+        .profile-photo-note{font-size:.82rem;color:#678092;margin-top:5px}
+        [data-testid="stImage"] img{border-radius:50%;border:4px solid #b9eaf0;object-fit:cover}
+        </style>
+        """, unsafe_allow_html=True)
+        st.markdown('<div class="profile-photo-title">Profile photo</div>', unsafe_allow_html=True)
+        photo_col, upload_col = st.columns([1, 3], vertical_alignment="center")
         with photo_col:
             if profile.get("avatar"):
-                st.image(profile["avatar"], width=120)
+                current_photo = Image.open(BytesIO(profile["avatar"])).convert("RGB")
+                current_photo = ImageOps.fit(current_photo, (240, 240), method=Image.Resampling.LANCZOS)
+                st.image(current_photo, width=150)
             else:
                 initials = "".join(part[0] for part in full_name.split()[:2]).upper()
                 st.markdown(
@@ -1506,19 +1515,35 @@ elif page == "Profile":
                 )
         with upload_col:
             avatar_file = st.file_uploader(
-                "Upload or change photo",
+                "Upload a new profile photo",
                 type=["jpg", "jpeg", "png", "webp"],
                 accept_multiple_files=False,
                 key="profile_avatar_upload",
-                help="Choose a JPG, PNG or WEBP image up to 5 MB.",
+                help="JPG, PNG or WEBP · Maximum 5 MB.",
             )
+            if avatar_file is not None:
+                try:
+                    preview_image = Image.open(BytesIO(avatar_file.getvalue())).convert("RGB")
+                    preview_image = ImageOps.fit(
+                        preview_image, (240, 240), method=Image.Resampling.LANCZOS
+                    )
+                    st.caption("Preview · This is how your profile photo will appear")
+                    st.image(preview_image, width=150)
+                except (OSError, ValueError):
+                    st.error("This image could not be previewed. Please choose another image.")
+            else:
+                st.markdown(
+                    '<div class="profile-photo-note">Choose an image to see its preview here. '
+                    'Your current photo stays active until you save the new one.</div>',
+                    unsafe_allow_html=True,
+                )
             if profile.get("avatar") and st.button("Remove photo", key="remove_profile_photo"):
                 remove_user_avatar(st.session_state.authenticated_user["id"])
                 st.success("Profile photo removed.")
                 st.rerun()
 
         if avatar_file is not None:
-            st.caption("New photo selected. Click Save changes to apply it.")
+            st.caption("New photo selected. Click Save changes below to apply it.")
 
         st.divider()
 
