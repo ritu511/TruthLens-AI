@@ -1700,11 +1700,16 @@ elif page == "AI Assistant":
     context_parts = []
     if st.session_state.get("extracted_text"):
         context_parts.append("Current source: " + st.session_state.get("current_filename", "Untitled"))
-        context_parts.append("Extracted text: " + st.session_state.extracted_text[:5000])
     if st.session_state.get("selected_claims"):
-        context_parts.append("Selected claims: " + " | ".join(st.session_state.selected_claims[:12]))
+        context_parts.append("Selected claims: " + " | ".join(st.session_state.selected_claims[:8]))
     if st.session_state.get("evidence"):
-        context_parts.append("Evidence: " + str(st.session_state.evidence[:12]))
+        evidence_summary = []
+        for item in st.session_state.evidence[:8]:
+            if isinstance(item, dict):
+                evidence_summary.append(
+                    f"{item.get('title', 'Untitled source')} — {item.get('relation', 'Unclear')}"
+                )
+        context_parts.append("Saved evidence: " + "; ".join(evidence_summary))
     chat_context = "\\n".join(context_parts)
     for message in st.session_state.chat_messages:
         with st.chat_message(message["role"]):
