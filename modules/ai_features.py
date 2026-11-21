@@ -14,7 +14,7 @@ from modules.source_credibility import analyze_source
 
 
 def _words(value):
-    return set(re.findall(r"[a-z0-9\\u0900-\\u097f]{2,}", str(value or "").lower()))
+    return set(re.findall(r"[a-z0-9\u0900-\u097f]{2,}", str(value or "").lower()))
 
 
 def assess_claim_with_context(claim, evidence):
@@ -144,3 +144,59 @@ def chat_answer(question, context=""):
         "source indicators, evidence collection, reports and investigation history. "
         "For open-ended AI responses, configure an optional Hugging Face token in Streamlit Secrets."
     )
+
+
+
+def ai_claim_review(claim, evidence):
+    """Ask the optional free-tier model to explain evidence without inventing facts."""
+    evidence = [item for item in (evidence or []) if isinstance(item, dict)][:12]
+    fallback = assess_claim_with_context(claim, evidence)
+    token = _hf_token()
+    if not token:
+        return {
+            "mode": "Local evidence assessment",
+            "answer": fallback["conclusion"] + ". " + fallback["explanation"],
+        }
+    evidence_text = "\\n".join(
+        f"- {item.get('title', 'Untitled')}; URL: {item.get('url', '')}; "
+        f"relationship selected by reviewer: {item.get('relation', 'Unclear')}; "
+        f"excerpt: {str(item.get('excerpt', ''))[:900]}"
+        for item in evidence
+    )
+    try:
+        response = requests.post(
+            "https://router.huggingface.co/v1/chat/completions",
+            headers={"Authorization": f"Bearer {token}"},
+            json={
+                "model": "Qwen/Qwen2.5-7B-Instruct",
+                "messages": [
+                    {
+                        "role": "system",
+                        "content": (
+                            "You are a cautious fact-checking research assistant. "
+                            "Evaluate only the evidence supplied. Separate what the excerpts "
+                            "say from what they prove. Do not invent sources, dates or facts. "
+                            "Do not issue a definitive true/false verdict. Mention conflicts, "
+                            "missing evidence and the need to open original sources."
+                        ),
+                    },
+                    {
+                        "role": "user",
+                        "content": f"Claim: {claim}\\nEvidence supplied:\\n{evidence_text or 'No evidence supplied.'}\\nExplain the evidence and its limitations.",
+                    },
+                ],
+                "temperature": 0.1,
+                "max_tokens": 550,
+            },
+            timeout=35,
+        )
+        response.raise_for_status()
+        answer = response.json()["choices"][0]["message"]["content"]
+        if answer:
+            return {"mode": "Hugging Face model-assisted review", "answer": answer}
+    except Exception:
+        pass
+    return {
+        "mode": "Local evidence assessment (model unavailable)",
+        "answer": fallback["conclusion"] + ". " + fallback["explanation"],
+    }
