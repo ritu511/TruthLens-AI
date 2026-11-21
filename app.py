@@ -731,10 +731,14 @@ st.markdown("""<style>
 
 # SIDEBAR NAVIGATION
 # -----------------------------------------------------------------------------
-# Route the bottom account button to Profile without adding a hidden menu row.
-profile_requested = st.session_state.pop("pending_workspace_page", None) == "Profile"
+# Apply navigation requests before the sidebar radio widget is created.
+# Streamlit does not allow changing a widget's session key after instantiation.
+pending_page = st.session_state.pop("pending_workspace_page", None)
+profile_requested = pending_page == "Profile"
+if pending_page and pending_page != "Profile":
+    st.session_state["workspace_page"] = pending_page
 if profile_requested:
-    # Keep the radio widget's key valid because Profile is intentionally not a menu item.
+    # Profile is intentionally not a menu item; route through Overview.
     st.session_state["workspace_page"] = "Overview"
 
 page_icons = {
@@ -1666,7 +1670,7 @@ elif page == "History":
                         st.session_state.evidence = list_investigation_evidence(
                             account["id"], username, restored.get("id")
                         )
-                        st.session_state["workspace_page"] = "Investigate"
+                        st.session_state["pending_workspace_page"] = "Investigate"
                         st.rerun()
                     else:
                         st.warning("This investigation could not be opened.")
