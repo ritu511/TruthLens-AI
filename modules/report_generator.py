@@ -2,6 +2,7 @@
 from io import BytesIO
 from datetime import datetime
 from pathlib import Path
+import re
 from xml.sax.saxutils import escape
 from urllib.parse import urlparse
 
@@ -27,29 +28,31 @@ AMBER = colors.HexColor("#9A6700")
 
 
 def _register_unicode_font():
-    """Register a Devanagari-capable Noto font when available on the host."""
-    candidates = [
-        "/usr/share/fonts/truetype/noto/NotoSansDevanagari-Regular.ttf",
-        "/usr/share/fonts/truetype/noto/NotoSansDevanagari[wdth,wght].ttf",
-        "/usr/share/fonts/opentype/noto/NotoSansDevanagari-Regular.ttf",
-    ]
-    for candidate in candidates:
-        if Path(candidate).exists():
-            try:
-                if "TruthLensNoto" not in pdfmetrics.getRegisteredFontNames():
-                    pdfmetrics.registerFont(
-                        TTFont("TruthLensNoto", candidate, shapable=True)
-                    )
-                    pdfmetrics.registerFontFamily(
-                        "TruthLensNoto", normal="TruthLensNoto",
-                        bold="TruthLensNoto", italic="TruthLensNoto",
-                        boldItalic="TruthLensNoto",
-                    )
-                return "TruthLensNoto"
-            except Exception:
-                continue
-    return "Helvetica"
-
+    """Register separate Latin and Devanagari fonts to avoid missing English glyphs."""
+    candidates = {
+        "TruthLensLatin": [
+            "/usr/share/fonts/truetype/noto/NotoSans-Regular.ttf",
+            "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+        ],
+        "TruthLensHindi": [
+            "/usr/share/fonts/truetype/noto/NotoSansDevanagari-Regular.ttf",
+            "/usr/share/fonts/opentype/noto/NotoSansDevanagari-Regular.ttf",
+        ],
+    }
+    registered = set(pdfmetrics.getRegisteredFontNames())
+    for name, paths in candidates.items():
+        if name in registered:
+            continue
+        for path in paths:
+            if Path(path).exists():
+                try:
+                    pdfmetrics.registerFont(TTFont(name, path, shapable=True))
+                    break
+                except Exception:
+                    pass
+    latin = "TruthLensLatin" if "TruthLensLatin" in pdfmetrics.getRegisteredFontNames() else "Helvetica"
+    hindi = "TruthLensHindi" if "TruthLensHindi" in pdfmetrics.getRegisteredFontNames() else latin
+    return latin, hindi
 
 def _styles(font_name):
     base = getSampleStyleSheet()
@@ -87,8 +90,19 @@ def _styles(font_name):
 
 
 def _safe(value):
-    return escape(str(value if value is not None else "")).replace("\n", "<br/>")
-
+    """Escape text and apply the Devanagari font only to Hindi character runs."""
+    latin, hindi = _register_unicode_font()
+    raw = str(value if value is not None else "")
+    parts = re.split(r"([\\u0900-\\u097F\\uA8E0-\\uA8FF]+)", raw)
+    output = []
+    for part in parts:
+        escaped = (part.replace("&", "&amp;").replace("<", "&lt;")
+                       .replace(">", "&gt;").replace("\\n", "<br/>"))
+        if part and re.fullmatch(r"[\\u0900-\\u097F\\uA8E0-\\uA8FF]+", part):
+            output.append(f'<font name="{hindi}">{escaped}</font>')
+        else:
+            output.append(escaped)
+    return "".join(output)
 
 def _footer(canvas, doc):
     canvas.saveState()
@@ -155,7 +169,7 @@ def generate_pdf_report(report_data):
         title="TruthLens AI - Claim Verification Report",
         author="TruthLens AI",
     )
-    font_name = _register_unicode_font()
+    font_name, _ = _register_unicode_font()
     styles = _styles(font_name)
     story = []
     _header(story, styles, "CLAIM VERIFICATION REPORT")
@@ -255,7 +269,7 @@ def generate_investigation_pdf(report_data):
         title="TruthLens AI - Complete Investigation Report",
         author="TruthLens AI",
     )
-    font_name = _register_unicode_font()
+    font_name, _ = _register_unicode_font()
     styles = _styles(font_name)
     story = []
     _header(story, styles, "COMPLETE INVESTIGATION REPORT")
