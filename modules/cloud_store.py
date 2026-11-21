@@ -162,12 +162,25 @@ def analytics_for_user(user_id, username):
     records = list_user_investigations(user_id, username)
     total = len(records)
     claims = sum(len(row.get("claims") or []) for row in records)
+    if supabase_configured():
+        evidence_rows = _request(
+            "GET", "evidence",
+            params={
+                "select": "id",
+                "user_key": f"eq.{str(username).lower()}",
+                "limit": "10000",
+            },
+        )
+        evidence_count = len(evidence_rows)
+    else:
+        evidence_count = sum(
+            len(get_evidence(row.get("id"), user_id))
+            for row in records if row.get("id") is not None
+        )
     return {
         "investigations": total,
         "claims": claims,
-        "evidence": sum(
-            len(row.get("evidence") or []) for row in records
-        ) if supabase_configured() else 0,
+        "evidence": evidence_count,
         "recent": records[:10],
         "storage": "Supabase" if supabase_configured() else "Local SQLite",
     }
