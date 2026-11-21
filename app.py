@@ -655,28 +655,60 @@ if active_theme == "Dark":
     """, unsafe_allow_html=True)
 
 
+st.markdown("""<style>
+    /* Sidebar structure refresh — uses the existing aqua-blue theme tokens */
+    .tl-sidebar-brand{display:flex;align-items:center;gap:11px;padding:8px 4px 18px}
+    .tl-sidebar-mark{width:42px;height:42px;display:grid;place-items:center;border-radius:13px;background:#00aabd;color:#fff!important;font-size:20px;font-weight:800;box-shadow:0 4px 12px rgba(0,103,125,.2)}
+    .tl-sidebar-name{font-size:1.05rem;font-weight:800;letter-spacing:-.035em;color:#effcff!important}
+    .tl-sidebar-tag{font-size:.7rem;color:#b8edf4!important;margin-top:2px}
+    .tl-sidebar-section{font-size:.66rem;font-weight:800;letter-spacing:.13em;color:#b8edf4!important;margin:15px 0 7px;padding-left:8px}
+    .tl-sidebar-foot{border:1px solid #27899a;border-radius:12px;background:rgba(0,40,52,.16);padding:12px;margin-top:14px}
+    .tl-sidebar-user{font-size:.82rem;font-weight:700;color:#effcff!important;overflow-wrap:anywhere}
+    .tl-sidebar-hint{font-size:.68rem;line-height:1.45;color:#b8edf4!important;margin-top:3px}
+    [data-testid="stSidebar"] [data-testid="stRadio"] [role="radiogroup"]{gap:5px!important}
+    [data-testid="stSidebar"] [data-testid="stRadio"] [role="radio"]{min-height:43px!important;padding:9px 12px!important;border-radius:10px!important}
+    [data-testid="stSidebar"] [data-testid="stRadio"] [role="radio"][aria-checked="true"]{background:#00aabd!important;box-shadow:inset 3px 0 0 #b8f7fb,0 3px 9px rgba(0,40,52,.12)!important}
+    [data-testid="stSidebar"] [data-testid="stRadio"] [role="radio"] p{font-weight:600!important}
+</style>""", unsafe_allow_html=True)
+
 # SIDEBAR NAVIGATION
 # -----------------------------------------------------------------------------
-# Apply navigation requests before the radio widget is created. This avoids
-# mutating the widget-owned session-state key after instantiation.
+# Apply navigation requests before the radio widget is created.
 if "pending_workspace_page" in st.session_state:
     st.session_state["workspace_page"] = st.session_state.pop("pending_workspace_page")
 
+page_icons = {
+    "Overview": "⌂  Overview",
+    "Investigate": "⌕  Investigate",
+    "Evidence Review": "▤  Evidence Review",
+    "Reports": "▧  Reports",
+    "History": "◷  History",
+    "Profile": "◉  Profile",
+    "Settings": "⚙  Settings",
+    "About": "ⓘ  About",
+}
 with st.sidebar:
-    st.markdown('<div class="nav-brand">◈ TruthLens AI</div><div class="nav-subtitle">Content intelligence workspace</div>', unsafe_allow_html=True)
-    st.divider()
+    st.markdown(
+        '<div class="tl-sidebar-brand"><div class="tl-sidebar-mark">TL</div>'
+        '<div><div class="tl-sidebar-name">TruthLens AI</div>'
+        '<div class="tl-sidebar-tag">Content investigation workspace</div></div></div>',
+        unsafe_allow_html=True,
+    )
+    st.markdown('<div class="tl-sidebar-section">WORKSPACE</div>', unsafe_allow_html=True)
     page = st.radio(
         "WORKSPACE",
         ["Overview", "Investigate", "Evidence Review", "Reports", "History", "Profile", "Settings", "About"],
-        label_visibility="visible",
+        format_func=lambda item: page_icons[item],
+        label_visibility="collapsed",
         key="workspace_page",
     )
-    st.divider()
-    st.caption("WORKFLOW")
-    st.markdown("Add content → Extract text → Identify claims → Review evidence")
-    st.divider()
-    st.caption(f"Signed in as · {st.session_state.authenticated_user.get('username', 'User')}")
-    if st.button("Sign out", use_container_width=True):
+    st.markdown(
+        '<div class="tl-sidebar-foot"><div class="tl-sidebar-user">◉  '
+        + html.escape(st.session_state.authenticated_user.get("username", "User"))
+        + '</div><div class="tl-sidebar-hint">Signed in to your private workspace</div></div>',
+        unsafe_allow_html=True,
+    )
+    if st.button("↪  Sign out", use_container_width=True):
         sign_out()
         st.rerun()
 
