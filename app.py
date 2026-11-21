@@ -739,6 +739,8 @@ if profile_requested:
 page_icons = {
     "Overview": "⌂  Overview",
     "Investigate": "⌕  Investigate",
+    "Claim Verification": "✓  Claim Verification",
+    "Source Checker": "◎  Source Checker",
     "Evidence Review": "▤  Evidence Review",
     "Reports": "▧  Reports",
     "History": "◷  History",
@@ -757,7 +759,7 @@ with st.sidebar:
     st.markdown('<div class="tl-sidebar-section">MAIN MENU</div>', unsafe_allow_html=True)
     selected_menu_page = st.radio(
         "MAIN MENU",
-        ["Overview", "Investigate", "Evidence Review", "Reports", "History", "AI Assistant", "Analytics", "Settings", "About"],
+        ["Overview", "Investigate", "Claim Verification", "Source Checker", "Evidence Review", "Reports", "History", "AI Assistant", "Analytics", "Settings", "About"],
         format_func=lambda item: page_icons[item],
         label_visibility="collapsed",
         key="workspace_page",
@@ -1430,6 +1432,71 @@ elif page == "Investigate":
             "Start above: upload a file, paste text, or enter a public webpage link. "
             "Then follow the steps shown here."
         )
+
+
+# -----------------------------------------------------------------------------
+# AI CLAIM VERIFICATION
+# -----------------------------------------------------------------------------
+elif page == "Claim Verification":
+    st.markdown('<div class="section-label">EVIDENCE-BASED REVIEW</div>', unsafe_allow_html=True)
+    st.title("AI Claim Verification")
+    st.caption("Review the evidence collected for each selected claim. The assessment is explainable and does not produce an unsupported true/false verdict.")
+    if not st.session_state.selected_claims:
+        st.info("No claims selected. Go to Investigate, extract candidate claims and select the statements you want to review.")
+    else:
+        for number, claim in enumerate(st.session_state.selected_claims, start=1):
+            result = assess_claim_with_context(claim, st.session_state.evidence)
+            with st.container(border=True):
+                st.markdown(f"### Claim {number}")
+                st.write(claim)
+                st.subheader(result["conclusion"])
+                st.write(result["explanation"])
+                cols = st.columns(4)
+                for col, label in zip(cols, ["Supports", "Contradicts", "Context only", "Unclear"]):
+                    col.metric(label, result["counts"][label])
+                if result["sources"]:
+                    st.markdown("**Reviewed evidence sources**")
+                    for source in result["sources"]:
+                        st.markdown(f"**{source['title']}** · {source['relation']}")
+                        st.caption(f"{source['domain']} · {source['source_category']} · Text overlap: {source['text_overlap']}%")
+                else:
+                    st.warning("No evidence has been collected for this claim yet.")
+                for note in result["limitations"]:
+                    st.caption("• " + note)
+
+
+# -----------------------------------------------------------------------------
+# SOURCE CREDIBILITY CHECKER
+# -----------------------------------------------------------------------------
+elif page == "Source Checker":
+    st.markdown('<div class="section-label">SOURCE INSPECTION</div>', unsafe_allow_html=True)
+    st.title("Source Credibility Checker")
+    st.caption("Inspect technical URL and domain indicators. This is not a verified publisher reputation service.")
+    with st.form("source_checker_form"):
+        source_url_input = st.text_input("Website or article URL", placeholder="https://example.com/news/article")
+        check_source = st.form_submit_button("Check source", type="primary")
+    if check_source:
+        source_result = analyze_source(source_url_input)
+        if source_result.get("valid_url"):
+            st.subheader(source_result.get("domain", "Unknown domain"))
+            first, second = st.columns(2)
+            first.metric("Domain category", source_result.get("category", "Unknown"))
+            second.metric("Technical indicator level", source_result.get("indicator_level", "Not assessed"))
+            st.write("**Connection:** " + ("HTTPS" if source_result.get("https") else "HTTP"))
+            for item in source_result.get("indicators", []):
+                st.write("• " + item)
+            if source_result.get("risk_indicators"):
+                st.markdown("**Checks to perform**")
+                for item in source_result["risk_indicators"]:
+                    st.warning(item)
+            else:
+                st.success("No additional URL-level warning was detected by these basic checks.")
+            with st.expander("Limitations"):
+                for item in source_result.get("limitations", []):
+                    st.caption(item)
+        else:
+            st.error(source_result.get("note", "This URL could not be checked."))
+    st.info("A government-style domain, known publisher domain or HTTPS connection does not guarantee that a particular article is accurate.")
 
 
 # -----------------------------------------------------------------------------
