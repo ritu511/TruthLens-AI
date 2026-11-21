@@ -23,7 +23,8 @@ from modules.report_generator import generate_pdf_report, generate_investigation
 from modules.cloud_store import (
     save_investigation, list_user_investigations,
     save_investigation_evidence, update_investigation_claims,
-    analytics_for_user, delete_user_investigation, supabase_configured,
+    analytics_for_user, delete_user_investigation, get_user_investigation,
+    list_investigation_evidence, supabase_configured,
 )
 from modules.ai_features import assess_claim_with_context, chat_answer
 
@@ -717,8 +718,7 @@ st.markdown("""<style>
         min-height:38px!important;padding:5px 10px!important;font-weight:750!important;
     }
     [data-testid="stSidebar"] [data-testid="stButton"] button[key="sidebar_profile_button"] *{color:#effcff!important}
-    /* Profile remains a valid internal page option but is hidden from MAIN MENU. */
-    [data-testid="stSidebar"] [data-testid="stRadio"] [role="radiogroup"]>label:nth-child(6){display:none!important}
+    /* No hidden navigation row: all visible workspace pages remain selectable. */
     [data-testid="stSidebar"] [data-testid="stRadio"] [role="radiogroup"]{gap:5px!important}
     [data-testid="stSidebar"] [data-testid="stRadio"] [role="radio"]{min-height:43px!important;padding:9px 12px!important;border-radius:10px!important;background:transparent!important;color:#effcff!important}
     [data-testid="stSidebar"] [data-testid="stRadio"] [role="radio"]>div:first-child{display:none!important}
@@ -1615,6 +1615,24 @@ elif page == "History":
                     st.markdown("**Saved candidate claims**")
                     for claim_item in saved_claims:
                         st.write(claim_item.get("claim", "") if isinstance(claim_item, dict) else str(claim_item))
+                if st.button("Open this investigation", key=f"open_history_{index}", type="primary"):
+                    restored = get_user_investigation(account["id"], username, item.get("id"))
+                    if restored:
+                        st.session_state.extracted_text = restored.get("extracted_text", restored.get("text", "")) or ""
+                        st.session_state.current_filename = restored.get("source_name") or restored.get("title", "Restored investigation")
+                        st.session_state.current_investigation_id = restored.get("id")
+                        st.session_state.claims = restored.get("claims") or []
+                        st.session_state.selected_claims = [
+                            row.get("claim", "") if isinstance(row, dict) else str(row)
+                            for row in st.session_state.claims
+                        ]
+                        st.session_state.evidence = list_investigation_evidence(
+                            account["id"], username, restored.get("id")
+                        )
+                        st.session_state["workspace_page"] = "Investigate"
+                        st.rerun()
+                    else:
+                        st.warning("This investigation could not be opened.")
                 if st.button("Delete this investigation", key=f"delete_history_{index}"):
                     if delete_user_investigation(account["id"], username, item.get("id")):
                         st.success("Investigation deleted.")
