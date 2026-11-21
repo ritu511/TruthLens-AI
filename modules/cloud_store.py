@@ -13,6 +13,7 @@ from modules.database import (
     save_analysis, list_analyses, get_analysis, delete_analysis,
     save_evidence, get_evidence,
 )
+from modules.auth import _connect
 
 
 def _setting(name, default=""):
@@ -64,7 +65,13 @@ def save_investigation(user_id, username, title, text, source_name="", claims=No
             "claims": claims,
         })
         return rows[0]["id"] if rows else None
-    return save_analysis(user_id, title or "Untitled investigation", text)
+    local_id = save_analysis(user_id, title or "Untitled investigation", text)
+    with _connect() as conn:
+        conn.execute(
+            "UPDATE investigations SET claims_json = ? WHERE id = ? AND user_id = ?",
+            (__import__("json").dumps(claims, ensure_ascii=False), local_id, user_id),
+        )
+    return local_id
 
 
 def list_user_investigations(user_id, username):
@@ -78,7 +85,14 @@ def list_user_investigations(user_id, username):
                 "limit": "200",
             },
         )
-    return list_analyses(user_id)
+    import json
+    rows = list_analyses(user_id)
+    for row in rows:
+        try:
+            row["claims"] = json.loads(row.get("claims_json") or "[]")
+        except (TypeError, ValueError):
+            row["claims"] = []
+    return rows
 
 
 def get_user_investigation(user_id, username, investigation_id):
@@ -198,6 +212,33 @@ def update_investigation_claims(user_id, username, investigation_id, claims):
             payload={"claims": claims},
         )
         return True
-    # The legacy SQLite schema stores extracted text but has no claims column.
-    # The app keeps claims in the active session; cloud storage persists them.
-    return False
+    import json
+    with _connect() as conn:
+        conn.execute(
+            "UPDATE investigations SET claims_json = ? WHERE id = ? AND user_id = ?",
+            (__import__("json").dumps(claims, ensure_ascii=False), investigation_id, user_id),
+        )
+    return True
+
+
+def update_investigation_content(user_id, username, investigation_id, title, text):
+    if supabase_configured():
+        _request(
+            "PATCH", "investigations",
+            params={
+                "id": f"eq.{investigation_id}",
+                "user_key": f"eq.{str(username).lower()}",
+            },
+            payload={
+                "title": str(title or "Untitled investigation")[:240],
+                "source_name": str(title or "")[:240],
+                "extracted_text": str(text or ""),
+            },
+        )
+        return True
+    with _connect() as conn:
+        cursor = conn.execute(
+            "UPDATE investigations SET title = ?, text = ? WHERE id = ? AND user_id = ?",
+            (str(title or "Untitled investigation")[:240], str(text or ""), investigation_id, user_id),
+        )
+        return cursor.rowcount > 0
