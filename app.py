@@ -1725,37 +1725,88 @@ elif page == "AI Assistant":
 # -----------------------------------------------------------------------------
 elif page == "Analytics":
     st.markdown('<div class="section-label">WORKSPACE INSIGHTS</div>', unsafe_allow_html=True)
-    st.title("Analytics dashboard")
-    st.caption("A summary of investigations and evidence saved to your account.")
+    st.title("Analytics")
+    st.caption("A clear snapshot of your investigation activity and saved research.")
+
     account = st.session_state.authenticated_user
     try:
         stats = analytics_for_user(account["id"], account.get("username", "user"))
-        history_rows = stats.get("recent", [])
-        total_claims = stats.get("claims", 0)
-        total_evidence = stats.get("evidence", 0)
-        if not supabase_configured():
-            total_claims = sum(len(row.get("claims") or []) for row in history_rows)
-            total_evidence = len(st.session_state.evidence)
+        history_rows = stats.get("recent", []) or []
+        total_investigations = int(stats.get("investigations", 0) or 0)
+        total_claims = int(stats.get("claims", 0) or 0)
+        total_evidence = int(stats.get("evidence", 0) or 0)
+
+        # Compact overview: all figures come from the account-level analytics query.
+        st.markdown("#### Your workspace at a glance")
         metric_cols = st.columns(4)
-        metric_cols[0].metric("Investigations", stats.get("investigations", 0))
+        metric_cols[0].metric("Investigations", total_investigations)
         metric_cols[1].metric("Candidate claims", total_claims)
-        metric_cols[2].metric("Evidence in active session" if not supabase_configured() else "Evidence records", total_evidence)
-        metric_cols[3].metric("Storage", stats.get("storage", "Unknown"))
-        if history_rows:
-            analytics_rows = [{
-                "Investigation": row.get("title", "Untitled"),
-                "Date": row.get("created_at", "Date unavailable"),
-                "Claims": len(row.get("claims") or []),
-            } for row in history_rows]
-            st.subheader("Recent activity")
-            st.dataframe(pd.DataFrame(analytics_rows), use_container_width=True, hide_index=True)
-            st.bar_chart(pd.DataFrame(analytics_rows).set_index("Investigation")[["Claims"]])
+        metric_cols[2].metric("Evidence records", total_evidence)
+        metric_cols[3].metric(
+            "Avg. claims / investigation",
+            f"{total_claims / total_investigations:.1f}" if total_investigations else "—",
+        )
+
+        st.divider()
+        left_col, right_col = st.columns([1.25, 1], gap="large")
+        with left_col:
+            st.markdown("#### Recent investigations")
+            if history_rows:
+                analytics_rows = []
+                for row in history_rows[:8]:
+                    title = str(row.get("title") or "Untitled investigation")
+                    created = str(row.get("created_at") or "Date unavailable")
+                    claim_count = len(row.get("claims") or [])
+                    analytics_rows.append({
+                        "Investigation": title,
+                        "Created": created,
+                        "Claims": claim_count,
+                    })
+                st.dataframe(
+                    pd.DataFrame(analytics_rows),
+                    use_container_width=True,
+                    hide_index=True,
+                    column_config={
+                        "Investigation": st.column_config.TextColumn("Investigation", width="large"),
+                        "Created": st.column_config.TextColumn("Created", width="medium"),
+                        "Claims": st.column_config.NumberColumn("Claims", format="%d", width="small"),
+                    },
+                )
+            else:
+                st.info("No saved investigations yet. Start an investigation to build your activity history.")
+
+        with right_col:
+            st.markdown("#### Claims by investigation")
+            if history_rows:
+                chart_rows = []
+                for index, row in enumerate(history_rows[:8], start=1):
+                    raw_title = str(row.get("title") or "Untitled")
+                    short_title = raw_title if len(raw_title) <= 24 else raw_title[:21] + "..."
+                    chart_rows.append({
+                        "Investigation": f"{index}. {short_title}",
+                        "Claims": len(row.get("claims") or []),
+                    })
+                chart_df = pd.DataFrame(chart_rows).set_index("Investigation")
+                st.bar_chart(chart_df, height=300, use_container_width=True)
+                st.caption("Showing your 8 most recent saved investigations.")
+            else:
+                st.info("Claim activity will appear here after you save an investigation.")
+
+        st.divider()
+        st.markdown("#### Storage")
+        storage_name = stats.get("storage", "Unknown")
+        if supabase_configured():
+            st.success("Connected storage: " + str(storage_name))
+            st.caption("Account-level investigation and evidence totals are loaded from the configured cloud database.")
         else:
-            st.info("No saved investigation activity yet.")
-        if not supabase_configured():
-            st.warning("For reliable cross-session analytics on Streamlit hosting, configure Supabase using supabase/schema.sql and Streamlit Secrets.")
+            st.warning(
+                "Current storage: Local SQLite. On Streamlit hosting, local files may not survive every "
+                "restart or redeployment. Configure Supabase using supabase/schema.sql and Streamlit Secrets "
+                "for more reliable cross-session storage."
+            )
     except Exception as error:
-        st.error("Analytics could not be loaded: " + str(error))
+        st.error("Analytics could not be loaded. Please try again; if the issue continues, share the app logs.")
+        st.caption(str(error))
 
 
 # -----------------------------------------------------------------------------
