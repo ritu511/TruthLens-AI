@@ -54,6 +54,17 @@ def init_db():
             )
         """)
 
+        # Forward-compatible schema migration for persisted candidate claims.
+        investigation_columns = {
+            row["name"] for row in conn.execute(
+                "PRAGMA table_info(investigations)"
+            ).fetchall()
+        }
+        if "claims_json" not in investigation_columns:
+            conn.execute(
+                "ALTER TABLE investigations ADD COLUMN claims_json TEXT NOT NULL DEFAULT '[]'"
+            )
+
         conn.execute("""
             CREATE TABLE IF NOT EXISTS evidence(
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
