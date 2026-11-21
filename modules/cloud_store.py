@@ -171,3 +171,20 @@ def analytics_for_user(user_id, username):
         "recent": records[:10],
         "storage": "Supabase" if supabase_configured() else "Local SQLite",
     }
+
+
+def update_investigation_claims(user_id, username, investigation_id, claims):
+    claims = claims if isinstance(claims, list) else []
+    if supabase_configured():
+        _request(
+            "PATCH", "investigations",
+            params={
+                "id": f"eq.{investigation_id}",
+                "user_key": f"eq.{str(username).lower()}",
+            },
+            payload={"claims": claims},
+        )
+        return True
+    # The legacy SQLite schema stores extracted text but has no claims column.
+    # The app keeps claims in the active session; cloud storage persists them.
+    return False
