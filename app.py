@@ -1726,7 +1726,7 @@ elif page == "AI Assistant":
 elif page == "Analytics":
     st.markdown('<div class="section-label">WORKSPACE INSIGHTS</div>', unsafe_allow_html=True)
     st.title("Analytics")
-    st.caption("Explore your investigation activity. Tap rows to compare one or more investigations.")
+    st.caption("A focused view of your saved investigations and research activity.")
 
     account = st.session_state.authenticated_user
     try:
@@ -1736,7 +1736,7 @@ elif page == "Analytics":
         total_claims = int(stats.get("claims", 0) or 0)
         total_evidence = int(stats.get("evidence", 0) or 0)
 
-        st.markdown("#### Your workspace at a glance")
+        st.markdown("#### Workspace overview")
         metric_cols = st.columns(4)
         metric_cols[0].metric("Investigations", total_investigations)
         metric_cols[1].metric("Candidate claims", total_claims)
@@ -1749,62 +1749,61 @@ elif page == "Analytics":
         st.divider()
         if history_rows:
             visible_history = history_rows[:8]
-            analytics_rows = []
-            chart_rows = []
-            for index, row in enumerate(visible_history):
-                raw_title = str(row.get("title") or "Untitled investigation")
-                short_title = raw_title if len(raw_title) <= 28 else raw_title[:25] + "..."
-                body = row.get("extracted_text", row.get("text", "")) or ""
-                claim_count = len(row.get("claims") or [])
-                analytics_rows.append({
-                    "Investigation": raw_title,
-                    "Created": str(row.get("created_at") or "Date unavailable"),
-                    "Claims": claim_count,
-                    "Characters": len(body),
-                })
-                chart_rows.append({
-                    "Investigation": f"{index + 1}. {short_title}",
-                    "Claims": claim_count,
-                    "Row": index,
-                    "Selected": False,
-                })
+            selection_key = "analytics_selected_investigation_indexes"
+            if selection_key not in st.session_state:
+                st.session_state[selection_key] = []
+            selected_rows = [
+                int(index) for index in st.session_state[selection_key]
+                if isinstance(index, int) and 0 <= index < len(visible_history)
+            ]
+            st.session_state[selection_key] = selected_rows
 
             st.markdown("#### Recent investigations")
-            st.caption("Tap a row to select it. Use Command-click / Control-click to select multiple rows where supported.")
-            table_event = st.dataframe(
-                pd.DataFrame(analytics_rows),
-                use_container_width=True,
-                hide_index=True,
-                on_select="rerun",
-                selection_mode="multi-row",
-                key="analytics_investigation_table",
-                column_config={
-                    "Investigation": st.column_config.TextColumn("Investigation", width="large"),
-                    "Created": st.column_config.TextColumn("Created", width="medium"),
-                    "Claims": st.column_config.NumberColumn("Claims", format="%d", width="small"),
-                    "Characters": st.column_config.NumberColumn("Characters", format="%d", width="small"),
-                },
-            )
-            selected_rows = (
-                list(table_event.selection.rows)
-                if table_event and table_event.selection
-                else []
-            )
-            selected_rows = [int(index) for index in selected_rows if 0 <= int(index) < len(visible_history)]
+            st.caption("Tap an investigation to select it. Select multiple files to compare their claim counts.")
 
+            # Touch-friendly selectable cards: no dataframe selection checkboxes.
+            for row_start in range(0, len(visible_history), 2):
+                card_cols = st.columns(2, gap="medium")
+                for offset, card_col in enumerate(card_cols):
+                    index = row_start + offset
+                    if index >= len(visible_history):
+                        continue
+                    item = visible_history[index]
+                    title = str(item.get("title") or "Untitled investigation")
+                    display_title = title if len(title) <= 34 else title[:31] + "..."
+                    claim_count = len(item.get("claims") or [])
+                    created = str(item.get("created_at") or "Date unavailable")
+                    is_selected = index in selected_rows
+                    with card_col:
+                        button_label = ("✓  " if is_selected else "＋  ") + display_title
+                        if st.button(
+                            button_label,
+                            key=f"analytics_toggle_investigation_{index}",
+                            type="primary" if is_selected else "secondary",
+                            use_container_width=True,
+                            help="Tap to add or remove this investigation from the comparison.",
+                        ):
+                            updated = list(st.session_state[selection_key])
+                            if index in updated:
+                                updated.remove(index)
+                            else:
+                                updated.append(index)
+                            st.session_state[selection_key] = sorted(updated)
+                            st.rerun()
+                        st.caption(f"{created}  ·  {claim_count} claims")
+
+            selected_rows = list(st.session_state[selection_key])
             selected_set = set(selected_rows)
-            for row in chart_rows:
-                row["Selected"] = row["Row"] in selected_set
+            action_cols = st.columns([1, 1, 3])
+            if action_cols[0].button("Show all", use_container_width=True, key="analytics_clear_selection"):
+                st.session_state[selection_key] = []
+                st.rerun()
+            if selected_rows:
+                action_cols[1].caption(f"{len(selected_rows)} selected")
 
             if selected_rows:
-                st.caption(f"{len(selected_rows)} investigation(s) selected — matching bars are highlighted below.")
-                if len(selected_rows) == 1:
-                    selected_item = visible_history[selected_rows[0]]
-                    open_label = "Open selected investigation"
-                else:
-                    selected_item = visible_history[selected_rows[0]]
-                    open_label = "Open first selected investigation"
-                    st.caption("To open a different file, select only that investigation.")
+                selected_item = visible_history[selected_rows[0]]
+                open_label = "Open selected" if len(selected_rows) == 1 else "Open first selected"
                 if st.button(open_label, type="primary", use_container_width=True, key="analytics_open_selected"):
                     restored = get_user_investigation(
                         account["id"], account.get("username", "user"), selected_item.get("id")
@@ -1825,56 +1824,72 @@ elif page == "Analytics":
                         st.rerun()
                     else:
                         st.error("This investigation could not be opened. Please try again from History.")
-            else:
-                st.caption("Showing all investigations. Select rows above to highlight one or more bars.")
+                if len(selected_rows) > 1:
+                    st.caption("The first selected investigation will open. Select only one file to open a specific investigation.")
 
+            st.divider()
             st.markdown("#### Claims by investigation")
             import altair as alt
 
+            chart_rows = []
+            for index, item in enumerate(visible_history):
+                title = str(item.get("title") or "Untitled investigation")
+                chart_rows.append({
+                    "Investigation": title,
+                    "Claims": len(item.get("claims") or []),
+                    "Selected": index in selected_set,
+                })
             chart_df = pd.DataFrame(chart_rows)
             chart = alt.Chart(chart_df).mark_bar(
-                cornerRadiusTopLeft=5,
-                cornerRadiusTopRight=5,
+                cornerRadiusEnd=5,
+                height=24,
             ).encode(
-                x=alt.X(
+                y=alt.Y(
                     "Investigation:N",
-                    sort=None,
-                    axis=alt.Axis(labelAngle=-35, title=None, labelLimit=170),
+                    sort="-x",
+                    title=None,
+                    axis=alt.Axis(labelLimit=260, labelFontSize=12, ticks=False, domain=False),
                 ),
-                y=alt.Y("Claims:Q", title="Candidate claims", scale=alt.Scale(domainMin=0, nice=True)),
+                x=alt.X(
+                    "Claims:Q",
+                    title="Candidate claims",
+                    scale=alt.Scale(domainMin=0, nice=True),
+                    axis=alt.Axis(format="d", tickMinStep=1),
+                ),
                 color=alt.condition(
                     alt.datum.Selected,
-                    alt.value("#00AABD"),
-                    alt.value("#2474C6"),
-                ),
-                opacity=alt.condition(
-                    alt.datum.Selected,
-                    alt.value(1.0),
-                    alt.value(0.78),
+                    alt.value("#0799A8"),
+                    alt.value("#8AA9C2"),
                 ),
                 tooltip=[
                     alt.Tooltip("Investigation:N", title="Investigation"),
                     alt.Tooltip("Claims:Q", title="Candidate claims"),
                     alt.Tooltip("Selected:N", title="Selected"),
                 ],
-            ).properties(height=340)
+            ).properties(
+                height=max(180, 48 * len(chart_rows)),
+                padding={"left": 8, "right": 18, "top": 12, "bottom": 12},
+            )
             st.altair_chart(chart, use_container_width=True)
-            st.caption("The chart always shows all recent investigations; selected rows are highlighted for comparison.")
+            if selected_rows:
+                st.caption("Highlighted bars match the investigations selected above. All recent investigations remain visible.")
+            else:
+                st.caption("Showing all recent investigations. Tap cards above to highlight files for comparison.")
         else:
             st.info("No saved investigations yet. Start an investigation to build your activity history.")
 
         st.divider()
-        st.markdown("#### Storage")
-        storage_name = stats.get("storage", "Unknown")
-        if supabase_configured():
-            st.success("Connected storage: " + str(storage_name))
-            st.caption("Account-level investigation and evidence totals are loaded from the configured cloud database.")
-        else:
-            st.warning(
-                "Current storage: Local SQLite. On Streamlit hosting, local files may not survive every "
-                "restart or redeployment. Configure Supabase using supabase/schema.sql and Streamlit Secrets "
-                "for more reliable cross-session storage."
-            )
+        with st.expander("Storage details"):
+            storage_name = stats.get("storage", "Unknown")
+            if supabase_configured():
+                st.success("Connected storage: " + str(storage_name))
+                st.caption("Account-level investigation and evidence totals are loaded from the configured cloud database.")
+            else:
+                st.warning(
+                    "Current storage: Local SQLite. On Streamlit hosting, local files may not survive every "
+                    "restart or redeployment. Configure Supabase using supabase/schema.sql and Streamlit Secrets "
+                    "for more reliable cross-session storage."
+                )
     except Exception as error:
         st.error("Analytics could not be loaded. Please try again; if the issue continues, share the app logs.")
         st.caption(str(error))
