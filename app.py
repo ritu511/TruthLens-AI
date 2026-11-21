@@ -1690,13 +1690,115 @@ elif page == "History":
 # AI ASSISTANT
 # -----------------------------------------------------------------------------
 elif page == "AI Assistant":
-    st.markdown('<div class="section-label">TRUTHLENS AI / RESEARCH ASSISTANT</div>', unsafe_allow_html=True)
-    st.title("AI Assistant")
-    st.caption("Ask about claim assessment, source indicators, evidence collection, reports and your active investigation.")
+    st.markdown(
+        """
+        <style>
+        .tl-ai-hero {
+            padding: 1.35rem 1.55rem;
+            border-radius: 22px;
+            background: linear-gradient(120deg, #063f50 0%, #087f91 58%, #12a7b0 100%);
+            color: #ffffff;
+            margin: .25rem 0 1.1rem 0;
+            box-shadow: 0 12px 28px rgba(5, 76, 91, .16);
+        }
+        .tl-ai-kicker {
+            color: #a9edf0;
+            font-size: .72rem;
+            font-weight: 800;
+            letter-spacing: .15em;
+            text-transform: uppercase;
+            margin-bottom: .45rem;
+        }
+        .tl-ai-hero h1 {
+            color: #ffffff !important;
+            font-size: 2rem !important;
+            margin: 0 0 .35rem 0 !important;
+            line-height: 1.15;
+        }
+        .tl-ai-hero p {
+            color: #e1f7f8 !important;
+            margin: 0 !important;
+            font-size: .98rem;
+        }
+        .tl-ai-status {
+            display: inline-flex;
+            align-items: center;
+            gap: .45rem;
+            border: 1px solid rgba(8, 132, 145, .18);
+            background: #f0fbfc;
+            color: #17616d;
+            border-radius: 999px;
+            padding: .35rem .75rem;
+            font-size: .78rem;
+            font-weight: 650;
+            margin: .1rem 0 .85rem 0;
+        }
+        .tl-ai-dot {
+            width: .48rem;
+            height: .48rem;
+            border-radius: 50%;
+            background: #16a47a;
+            display: inline-block;
+            box-shadow: 0 0 0 3px rgba(22,164,122,.12);
+        }
+        [data-testid="stChatMessage"] {
+            background: #ffffff;
+            border: 1px solid #dcebf0;
+            border-radius: 18px;
+            padding: .9rem 1rem;
+            margin: .65rem 0;
+            box-shadow: 0 5px 16px rgba(17, 65, 82, .045);
+        }
+        [data-testid="stChatMessage"] [data-testid="stMarkdownContainer"] p {
+            line-height: 1.65;
+        }
+        [data-testid="stChatInput"] {
+            border-radius: 18px !important;
+            border: 1px solid #b8dce3 !important;
+            box-shadow: 0 8px 24px rgba(13, 92, 109, .08) !important;
+            background: #ffffff !important;
+        }
+        [data-testid="stChatInput"] textarea {
+            font-size: .98rem !important;
+        }
+        div.stButton > button[kind="secondary"] {
+            border-radius: 13px;
+            border-color: #c8e4e9;
+            background: #ffffff;
+            color: #175467;
+            min-height: 2.8rem;
+            font-weight: 600;
+        }
+        div.stButton > button[kind="secondary"]:hover {
+            border-color: #0799a8;
+            color: #057b89;
+            background: #f1fbfc;
+        }
+        .tl-ai-welcome {
+            border: 1px solid #d6eaf0;
+            background: linear-gradient(135deg, #ffffff 0%, #f1fafc 100%);
+            border-radius: 18px;
+            padding: 1.05rem 1.2rem;
+            margin: .5rem 0 1rem 0;
+        }
+        .tl-ai-welcome strong { color: #123b4b; }
+        .tl-ai-welcome span { color: #527080; font-size: .9rem; }
+        </style>
+        <div class="tl-ai-hero">
+          <div class="tl-ai-kicker">TRUTHLENS AI · RESEARCH WORKSPACE</div>
+          <h1>Ask better questions. Examine the evidence.</h1>
+          <p>Your investigation-aware assistant for claims, sources and evidence review.</p>
+        </div>
+        <div class="tl-ai-status"><span class="tl-ai-dot"></span> Assistant ready · Evidence-aware responses</div>
+        """,
+        unsafe_allow_html=True,
+    )
+
     if supabase_configured():
-        st.success("Cloud persistence is configured. Chat responses use Hugging Face only if HF_TOKEN is configured.")
+        st.caption("Cloud persistence is configured. Open-ended model responses are optional and require HF_TOKEN.")
     else:
-        st.info("Local assistant mode is available without paid APIs. Add HF_TOKEN in Streamlit Secrets for optional open-ended model responses.")
+        st.caption("Local assistant mode · No paid API required. Optional model responses can be enabled with HF_TOKEN.")
+
     context_parts = []
     if st.session_state.get("extracted_text"):
         context_parts.append("Current source: " + st.session_state.get("current_filename", "Untitled"))
@@ -1711,18 +1813,46 @@ elif page == "AI Assistant":
                 )
         context_parts.append("Saved evidence: " + "; ".join(evidence_summary))
     chat_context = "\\n".join(context_parts)
+
+    if not st.session_state.chat_messages:
+        st.markdown(
+            '<div class="tl-ai-welcome"><strong>Welcome to your research assistant</strong><br>'
+            '<span>Ask a question below, or start with one of these suggested prompts.</span></div>',
+            unsafe_allow_html=True,
+        )
+        prompt_cols = st.columns(3, gap="small")
+        quick_prompts = [
+            "How do I verify a claim?",
+            "How can I assess source credibility?",
+            "What makes evidence contradictory?",
+        ]
+        quick_question = None
+        for idx, prompt in enumerate(quick_prompts):
+            if prompt_cols[idx].button(prompt, key=f"truthlens_quick_prompt_{idx}", use_container_width=True):
+                quick_question = prompt
+    else:
+        quick_question = None
+
     for message in st.session_state.chat_messages:
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
-    question = st.chat_input("Ask TruthLens AI about your investigation...")
+
+    typed_question = st.chat_input("Ask TruthLens AI about claims, sources or this investigation...")
+    question = quick_question or typed_question
     if question:
         st.session_state.chat_messages.append({"role": "user", "content": question})
         answer = chat_answer(question, chat_context)
         st.session_state.chat_messages.append({"role": "assistant", "content": answer})
         st.rerun()
-    if st.button("Clear chat", key="clear_truthlens_chat"):
-        st.session_state.chat_messages = []
-        st.rerun()
+
+    if st.session_state.chat_messages:
+        clear_col, note_col = st.columns([1, 4])
+        with clear_col:
+            if st.button("Clear conversation", key="clear_truthlens_chat", use_container_width=True):
+                st.session_state.chat_messages = []
+                st.rerun()
+        with note_col:
+            st.caption("TruthLens AI can make mistakes. Verify important findings against original sources.")
 
 
 # -----------------------------------------------------------------------------
