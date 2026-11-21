@@ -133,14 +133,38 @@ def analyze_source(url):
             "This analysis does not inspect website ownership, article content or editorial standards."
         ]
 
+        risk_indicators = []
+        if parsed.scheme.lower() != "https":
+            risk_indicators.append("The connection does not use HTTPS.")
+        if category == "Unclassified":
+            risk_indicators.append("The domain is not in the built-in government, education or publisher reference categories.")
+        if len(host.split(".")) > 4:
+            risk_indicators.append("The hostname contains several subdomain levels; confirm the exact publisher domain.")
+        if len(parsed.query) > 180:
+            risk_indicators.append("The URL contains a long query string; inspect tracking and redirect parameters.")
+        if host in {"bit.ly", "tinyurl.com", "t.co", "shorturl.at"}:
+            risk_indicators.append("This is a URL-shortening domain; verify the final destination before relying on it.")
+
+        # This is a transparent technical-indicator label, not a trust score.
+        if not risk_indicators:
+            indicator_level = "Fewer technical warnings"
+        elif len(risk_indicators) <= 2:
+            indicator_level = "Some technical checks needed"
+        else:
+            indicator_level = "More technical checks needed"
+
         result.update({
             "valid_url": True,
             "domain": host,
             "category": category,
             "https": parsed.scheme.lower() == "https",
             "indicators": indicators,
-            "limitations": limitations,
-            "note": "Domain category and HTTPS are indicators only; they do not prove accuracy or editorial reliability."
+            "risk_indicators": risk_indicators,
+            "indicator_level": indicator_level,
+            "limitations": limitations + [
+                "The indicator level is not a verified trust rating or probability."
+            ],
+            "note": "Technical URL indicators only; they do not prove accuracy or editorial reliability."
         })
 
         return result
