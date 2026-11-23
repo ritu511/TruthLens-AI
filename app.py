@@ -768,40 +768,57 @@ st.markdown("""<style>
         min-height:38px!important;padding:5px 10px!important;font-weight:750!important;
     }
     [data-testid="stSidebar"] [data-testid="stButton"] button[key="sidebar_profile_button"] *{color:#effcff!important}
-    /* No hidden navigation row: all visible workspace pages remain selectable. */
-    [data-testid="stSidebar"] [data-testid="stRadio"] [role="radiogroup"]{gap:5px!important}
-    [data-testid="stSidebar"] [data-testid="stRadio"] [role="radio"]{min-height:43px!important;padding:9px 12px!important;border-radius:10px!important;background:transparent!important;color:#effcff!important}
-    [data-testid="stSidebar"] [data-testid="stRadio"] [role="radio"]>div:first-child{display:none!important}
-    [data-testid="stSidebar"] [data-testid="stRadio"] [role="radio"] p{font-size:.88rem!important;font-weight:600!important;color:#effcff!important;margin:0!important}
-    [data-testid="stSidebar"] [data-testid="stRadio"] [role="radio"]:hover{background:#087f91!important}
-    [data-testid="stSidebar"] [data-testid="stRadio"] [role="radio"][aria-checked="true"]{background:#00aabd!important;box-shadow:inset 3px 0 0 #b8f7fb!important}
-    [data-testid="stSidebar"] [data-testid="stRadio"] [role="radio"][aria-checked="true"] p{color:#fff!important;font-weight:750!important}
+    /* Sidebar navigation uses real buttons, not radio controls. */
+    [data-testid="stSidebar"] [class*="st-key-nav-item-"]{margin:0 0 6px!important}
+    [data-testid="stSidebar"] [class*="st-key-nav-item-"] [data-testid="stButton"]{width:100%!important}
+    [data-testid="stSidebar"] [class*="st-key-nav-item-"] [data-testid="stButton"]>button{
+        width:100%!important;min-height:47px!important;
+        display:flex!important;align-items:center!important;justify-content:flex-start!important;
+        padding:0 14px!important;border-radius:12px!important;
+        border:1px solid rgba(126,211,222,.14)!important;
+        background:rgba(0,42,54,.20)!important;
+        color:#e7fbff!important;-webkit-text-fill-color:#e7fbff!important;
+        font-size:.91rem!important;font-weight:650!important;text-align:left!important;
+        box-shadow:none!important;transition:background .18s ease,border-color .18s ease,transform .18s ease!important;
+    }
+    [data-testid="stSidebar"] [class*="st-key-nav-item-"] [data-testid="stButton"]>button p,
+    [data-testid="stSidebar"] [class*="st-key-nav-item-"] [data-testid="stButton"]>button span{
+        color:inherit!important;-webkit-text-fill:inherit!important;font-weight:inherit!important;
+    }
+    [data-testid="stSidebar"] [class*="st-key-nav-item-"] [data-testid="stButton"]>button:hover{
+        background:#087f91!important;border-color:#38b7c5!important;
+        color:#fff!important;-webkit-text-fill:#fff!important;transform:translateX(2px)!important;
+    }
+    [data-testid="stSidebar"] [class*="st-key-nav-item-"] [data-testid="stButton"]>button[kind="primary"]{
+        background:linear-gradient(105deg,#00aabd 0%,#078da2 100%)!important;
+        border-color:#72e1e8!important;color:#fff!important;-webkit-text-fill:#fff!important;
+        font-weight:750!important;box-shadow:0 5px 14px rgba(0,30,44,.18),inset 3px 0 0 #b9f7fb!important;
+    }
+    [data-testid="stSidebar"] [class*="st-key-nav-item-"] [data-testid="stButton"]>button:focus-visible{
+        outline:2px solid #b8f7fb!important;outline-offset:2px!important;
+    }
+    @media(max-width:700px){
+        [data-testid="stSidebar"] [class*="st-key-nav-item-"] [data-testid="stButton"]>button{
+            min-height:44px!important;font-size:.88rem!important;
+        }
+    }
 </style>""", unsafe_allow_html=True)
 
 # SIDEBAR NAVIGATION
 # -----------------------------------------------------------------------------
-def _sync_active_workspace_page():
-    """Keep the active page in session state when the sidebar radio changes."""
-    st.session_state["active_workspace_page"] = st.session_state.get(
-        "workspace_page", "Overview"
-    )
+def _navigate_to_workspace_page(page_name):
+    """Change the active workspace page from a sidebar navigation button."""
+    st.session_state["active_workspace_page"] = page_name
 
 
-# Apply navigation requests before the sidebar radio widget is created.
-# Keep the destination in session state so file uploaders and forms can rerun
-# the app without unexpectedly sending the user back to Overview.
+# Apply navigation requests before the sidebar buttons are created.
+# Persisting the destination keeps the current page stable across Streamlit reruns.
 pending_page = st.session_state.pop("pending_workspace_page", None)
-if pending_page == "Profile":
-    st.session_state["active_workspace_page"] = "Profile"
-    st.session_state["workspace_page"] = "Overview"
-elif pending_page:
-    st.session_state["workspace_page"] = pending_page
+if pending_page:
     st.session_state["active_workspace_page"] = pending_page
 
 if "active_workspace_page" not in st.session_state:
-    st.session_state["active_workspace_page"] = st.session_state.get(
-        "workspace_page", "Overview"
-    )
+    st.session_state["active_workspace_page"] = "Overview"
 
 page_icons = {
     "Overview": "⌂  Overview",
@@ -824,15 +841,22 @@ with st.sidebar:
         unsafe_allow_html=True,
     )
     st.markdown('<div class="tl-sidebar-section">MAIN MENU</div>', unsafe_allow_html=True)
-    selected_menu_page = st.radio(
-        "MAIN MENU",
-        ["Overview", "Investigate", "Claim Verification", "Source Checker", "Evidence Review", "Reports", "History", "AI Assistant", "Analytics", "Settings", "About"],
-        format_func=lambda item: page_icons[item],
-        label_visibility="collapsed",
-        key="workspace_page",
-        on_change=_sync_active_workspace_page,
-    )
-    page = st.session_state.get("active_workspace_page", selected_menu_page)
+    for menu_item, menu_label in page_icons.items():
+        menu_slug = menu_item.lower().replace(" ", "-")
+        with st.container(key=f"nav-item-{menu_slug}"):
+            st.button(
+                menu_label,
+                key=f"nav-button-{menu_slug}",
+                type=(
+                    "primary"
+                    if st.session_state.get("active_workspace_page", "Overview") == menu_item
+                    else "secondary"
+                ),
+                use_container_width=True,
+                on_click=_navigate_to_workspace_page,
+                args=(menu_item,),
+            )
+    page = st.session_state.get("active_workspace_page", "Overview")
     username = st.session_state.authenticated_user.get("username", "User")
     initials = html.escape((username[:1] or "U").upper())
     st.markdown(
@@ -2108,7 +2132,6 @@ elif page == "Profile":
     st.caption("Manage your personal details and account information.")
     if st.button("← Back to Overview", key="profile_back_to_overview"):
         st.session_state["active_workspace_page"] = "Overview"
-        st.session_state["workspace_page"] = "Overview"
         st.rerun()
 
     full_name = " ".join(
