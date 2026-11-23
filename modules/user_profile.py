@@ -50,6 +50,24 @@ def get_user_profile(user_id):
         return dict(row)
 
 
+def save_user_avatar(user_id, avatar):
+    """Persist a validated profile photo independently from profile details."""
+    if not isinstance(avatar, (bytes, bytearray, memoryview)) or not avatar:
+        raise ValueError("Please choose a valid profile picture.")
+
+    avatar_bytes = bytes(avatar)
+    with _connect() as conn:
+        _ensure_profile_table(conn)
+        conn.execute(
+            """
+            INSERT INTO user_profiles(user_id, avatar)
+            VALUES (?, ?)
+            ON CONFLICT(user_id) DO UPDATE SET avatar = excluded.avatar
+            """,
+            (user_id, avatar_bytes),
+        )
+
+
 def remove_user_avatar(user_id):
     """Remove only the saved profile photo for one user."""
     with _connect() as conn:

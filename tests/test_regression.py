@@ -98,6 +98,39 @@ class DatabaseRegressionTests(unittest.TestCase):
     def tearDown(self):
         self.temp_dir.cleanup()
 
+    def test_profile_avatar_is_saved_updated_and_removed(self):
+        from modules.user_profile import (
+            get_user_profile, save_user_avatar, save_user_profile,
+            remove_user_avatar,
+        )
+
+        ok, _ = self.auth.register_user("avatar_user", "StrongPass123")
+        self.assertTrue(ok)
+        user = self.auth.authenticate_user("avatar_user", "StrongPass123")
+        self.assertIsNotNone(user)
+
+        save_user_avatar(user["id"], b"first-image-bytes")
+        self.assertEqual(
+            get_user_profile(user["id"])["avatar"],
+            b"first-image-bytes",
+        )
+
+        save_user_avatar(user["id"], b"replacement-image-bytes")
+        self.assertEqual(
+            get_user_profile(user["id"])["avatar"],
+            b"replacement-image-bytes",
+        )
+
+        # Saving personal details without an image must keep the existing photo.
+        save_user_profile(user["id"], "Avatar User", "", "")
+        self.assertEqual(
+            get_user_profile(user["id"])["avatar"],
+            b"replacement-image-bytes",
+        )
+
+        remove_user_avatar(user["id"])
+        self.assertIsNone(get_user_profile(user["id"])["avatar"])
+
     def test_existing_auth_and_persistent_history_work_together(self):
         from modules.cloud_store import (
             save_investigation, list_user_investigations,

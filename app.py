@@ -9,7 +9,7 @@ import streamlit as st
 from PIL import Image, ImageDraw, ImageOps
 
 from modules.auth import init_db, register_user, authenticate_user
-from modules.user_profile import get_user_profile, save_user_profile, remove_user_avatar
+from modules.user_profile import get_user_profile, save_user_profile, save_user_avatar, remove_user_avatar
 from modules.file_reader import extract_file_content
 from modules.claim_extractor import extract_claims
 from modules.verification import generate_search_links
@@ -28,6 +28,51 @@ from modules.cloud_store import (
     list_investigation_evidence, supabase_configured,
 )
 from modules.ai_features import assess_claim_with_context, ai_claim_review, chat_answer
+
+
+def _prepare_profile_avatar(uploaded_file):
+    """Validate and normalize a profile image before it is stored."""
+    if uploaded_file is None:
+        raise ValueError("Please choose a profile picture first.")
+
+    raw_bytes = uploaded_file.getvalue()
+    if not raw_bytes:
+        raise ValueError("The selected image is empty.")
+    if len(raw_bytes) > 5 * 1024 * 1024:
+        raise ValueError("Profile picture must be 5 MB or smaller.")
+
+    try:
+        with Image.open(BytesIO(raw_bytes)) as source:
+            image_format = (source.format or "").upper()
+            if image_format not in ("JPEG", "PNG", "WEBP"):
+                raise ValueError("Please upload a JPG, PNG or WEBP image.")
+            source.verify()
+
+        # Normalize uploads to JPEG so phone orientation, transparency and
+        # browser-specific image encodings do not break later previews.
+        with Image.open(BytesIO(raw_bytes)) as source:
+            image = ImageOps.exif_transpose(source)
+            if image.mode in ("RGBA", "LA") or "transparency" in image.info:
+                rgba = image.convert("RGBA")
+                background = Image.new("RGB", rgba.size, (255, 255, 255))
+                background.paste(rgba, mask=rgba.getchannel("A"))
+                image = background
+            else:
+                image = image.convert("RGB")
+
+            if image.width * image.height > 30_000_000:
+                raise ValueError("Image resolution is too large. Please choose an image under 30 megapixels.")
+
+            image.thumbnail((1024, 1024), Image.Resampling.LANCZOS)
+            output = BytesIO()
+            image.save(output, format="JPEG", quality=90, optimize=True)
+            return output.getvalue()
+    except Image.DecompressionBombError as error:
+        raise ValueError("This image is too large to process safely. Please choose a smaller image.") from error
+    except (OSError, SyntaxError) as error:
+        raise ValueError("The selected file is not a valid image. Please choose a JPG, PNG or WEBP file.") from error
+
+
 
 
 # -----------------------------------------------------------------------------
@@ -2087,37 +2132,60 @@ elif page == "Profile":
                     f'<div class="profile-avatar-fallback">{html.escape(initials or "TL")}</div>',
                     unsafe_allow_html=True,
                 )
+        if "profile_avatar_upload_version" not in st.session_state:
+            st.session_state["profile_avatar_upload_version"] = 0
+        avatar_upload_key = (
+            f"profile_avatar_upload_{st.session_state['profile_avatar_upload_version']}"
+        )
+
         with upload_col:
             avatar_file = st.file_uploader(
                 "Upload a new profile photo",
                 type=["jpg", "jpeg", "png", "webp"],
                 accept_multiple_files=False,
-                key="profile_avatar_upload",
+                key=avatar_upload_key,
                 help="JPG, PNG or WEBP · Maximum 5 MB.",
             )
+            avatar_bytes = None
             if avatar_file is not None:
                 try:
-                    preview_image = Image.open(BytesIO(avatar_file.getvalue())).convert("RGB")
-                    preview_image = ImageOps.fit(
-                        preview_image, (240, 240), method=Image.Resampling.LANCZOS
-                    )
+                    avatar_bytes = _prepare_profile_avatar(avatar_file)
+                    with Image.open(BytesIO(avatar_bytes)) as preview_source:
+                        preview_image = ImageOps.fit(
+                            preview_source.convert("RGB"),
+                            (240, 240),
+                            method=Image.Resampling.LANCZOS,
+                        )
                     st.caption("Preview · This is how your profile photo will appear")
                     st.image(preview_image, width=150)
-                except (OSError, ValueError):
-                    st.error("This image could not be previewed. Please choose another image.")
+
+                    if st.button(
+                        "Save profile photo",
+                        key="save_profile_photo",
+                        type="primary",
+                        use_container_width=True,
+                    ):
+                        save_user_avatar(
+                            st.session_state.authenticated_user["id"],
+                            avatar_bytes,
+                        )
+                        st.session_state["profile_avatar_upload_version"] += 1
+                        st.success("Profile photo saved successfully.")
+                        st.rerun()
+                except (ValueError, OSError) as error:
+                    st.error(str(error))
             else:
                 st.markdown(
-                    '<div class="profile-photo-note">Choose an image to see its preview here. '
-                    'Your current photo stays active until you save the new one.</div>',
+                    '<div class="profile-photo-note">Choose an image to preview it, then click '
+                    'Save profile photo. Your current photo stays active until the new one is saved.</div>',
                     unsafe_allow_html=True,
                 )
+
             if profile.get("avatar") and st.button("Remove photo", key="remove_profile_photo"):
                 remove_user_avatar(st.session_state.authenticated_user["id"])
+                st.session_state["profile_avatar_upload_version"] += 1
                 st.success("Profile photo removed.")
                 st.rerun()
-
-        if avatar_file is not None:
-            st.caption("New photo selected. Click Save changes below to apply it.")
 
         st.divider()
 
@@ -2178,16 +2246,6 @@ elif page == "Profile":
 
         if save_profile:
             try:
-                avatar_bytes = None
-                if avatar_file is not None:
-                    avatar_bytes = avatar_file.getvalue()
-                    if len(avatar_bytes) > 5 * 1024 * 1024:
-                        raise ValueError("Profile picture must be 5 MB or smaller.")
-                    image_check = Image.open(BytesIO(avatar_bytes))
-                    image_check.verify()
-                    if image_check.format not in ("JPEG", "PNG", "WEBP"):
-                        raise ValueError("Please upload a JPG, PNG or WEBP image.")
-
                 save_user_profile(
                     st.session_state.authenticated_user["id"],
                     " ".join(part for part in (first_name, middle_name, last_name) if part),
@@ -2202,7 +2260,6 @@ elif page == "Profile":
                     last_name=last_name,
                     phone=phone,
                     date_of_birth=dob.isoformat() if dob else "",
-                    avatar=avatar_bytes,
                 )
                 st.success("Your profile has been updated.")
                 st.rerun()
