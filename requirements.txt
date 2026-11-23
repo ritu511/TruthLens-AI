@@ -13,6 +13,5 @@ requests
 beautifulsoup4
 transformers
 torch
-sentence-transformers[image]
 reportlab>=4.4.0
 uharfbuzz
