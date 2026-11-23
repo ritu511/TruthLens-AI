@@ -2281,63 +2281,19 @@ elif page == "Profile":
             with contact_left:
                 phone = st.text_input("Phone number", value=profile.get("phone", ""), placeholder="+91 98765 43210")
             with contact_right:
-                st.markdown("**Date of birth**")
-                dob_day_options = [None] + list(range(1, 32))
-                dob_month_options = [None] + list(range(1, 13))
-                # Explicit year options ensure every year from 1970 onward is selectable.
-                dob_year_options = [None] + list(range(1970, today.year + 1))
-
-                dob_day_col, dob_month_col, dob_year_col = st.columns(
-                    [0.85, 1.35, 1.0], gap="small"
+                dob = st.date_input(
+                    "Date of birth",
+                    value=dob_value,
+                    min_value=date(1970, 1, 1),
+                    max_value=today,
+                    format="DD/MM/YYYY",
                 )
-                with dob_day_col:
-                    dob_day = st.selectbox(
-                        "Day",
-                        options=dob_day_options,
-                        index=dob_day_options.index(dob_value.day) if dob_value else 0,
-                        format_func=lambda value: "DD" if value is None else f"{value:02d}",
-                        key="profile_dob_day",
-                    )
-                with dob_month_col:
-                    dob_month = st.selectbox(
-                        "Month",
-                        options=dob_month_options,
-                        index=dob_month_options.index(dob_value.month) if dob_value else 0,
-                        format_func=lambda value: "MM" if value is None else date(2000, value, 1).strftime("%B"),
-                        key="profile_dob_month",
-                    )
-                with dob_year_col:
-                    dob_year = st.selectbox(
-                        "Year",
-                        options=dob_year_options,
-                        index=dob_year_options.index(dob_value.year) if dob_value else 0,
-                        format_func=lambda value: "YYYY" if value is None else str(value),
-                        key="profile_dob_year",
-                    )
-
-                dob_parts_selected = [
-                    dob_day is not None,
-                    dob_month is not None,
-                    dob_year is not None,
-                ]
-                dob = None
-                dob_is_invalid = False
-                if all(dob_parts_selected):
-                    try:
-                        dob = date(dob_year, dob_month, dob_day)
-                    except ValueError:
-                        dob_is_invalid = True
-                        st.error("Please select a valid date of birth.")
 
             bio = st.text_area("About you", value=profile.get("bio", ""), height=105, placeholder="A short introduction (optional)")
             save_profile = st.form_submit_button("Save changes", type="primary", use_container_width=True)
 
         if save_profile:
             try:
-                if any(dob_parts_selected) and not all(dob_parts_selected):
-                    raise ValueError("Please select day, month and year, or leave all three blank.")
-                if dob_is_invalid:
-                    raise ValueError("Please select a valid date of birth.")
                 save_user_profile(
                     st.session_state.authenticated_user["id"],
                     " ".join(part for part in (first_name, middle_name, last_name) if part),
