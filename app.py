@@ -173,6 +173,10 @@ def sign_out():
         st.session_state.pop(key, None)
     st.session_state.pop("dashboard_claim_selection", None)
     st.session_state.pop("dashboard_extracted_text_editor", None)
+    st.session_state.pop("active_workspace_page", None)
+    st.session_state.pop("workspace_page", None)
+    st.session_state.pop("pending_workspace_page", None)
+    st.session_state.pop("profile_avatar_upload_version", None)
     st.session_state.authenticated_user = None
 
 
@@ -776,15 +780,28 @@ st.markdown("""<style>
 
 # SIDEBAR NAVIGATION
 # -----------------------------------------------------------------------------
+def _sync_active_workspace_page():
+    """Keep the active page in session state when the sidebar radio changes."""
+    st.session_state["active_workspace_page"] = st.session_state.get(
+        "workspace_page", "Overview"
+    )
+
+
 # Apply navigation requests before the sidebar radio widget is created.
-# Streamlit does not allow changing a widget's session key after instantiation.
+# Keep the destination in session state so file uploaders and forms can rerun
+# the app without unexpectedly sending the user back to Overview.
 pending_page = st.session_state.pop("pending_workspace_page", None)
-profile_requested = pending_page == "Profile"
-if pending_page and pending_page != "Profile":
-    st.session_state["workspace_page"] = pending_page
-if profile_requested:
-    # Profile is intentionally not a menu item; route through Overview.
+if pending_page == "Profile":
+    st.session_state["active_workspace_page"] = "Profile"
     st.session_state["workspace_page"] = "Overview"
+elif pending_page:
+    st.session_state["workspace_page"] = pending_page
+    st.session_state["active_workspace_page"] = pending_page
+
+if "active_workspace_page" not in st.session_state:
+    st.session_state["active_workspace_page"] = st.session_state.get(
+        "workspace_page", "Overview"
+    )
 
 page_icons = {
     "Overview": "⌂  Overview",
@@ -813,8 +830,9 @@ with st.sidebar:
         format_func=lambda item: page_icons[item],
         label_visibility="collapsed",
         key="workspace_page",
+        on_change=_sync_active_workspace_page,
     )
-    page = "Profile" if profile_requested else selected_menu_page
+    page = st.session_state.get("active_workspace_page", selected_menu_page)
     username = st.session_state.authenticated_user.get("username", "User")
     initials = html.escape((username[:1] or "U").upper())
     st.markdown(
@@ -2088,6 +2106,10 @@ elif page == "Profile":
     st.markdown('<div class="section-label">MY ACCOUNT / PROFILE</div>', unsafe_allow_html=True)
     st.title("Profile")
     st.caption("Manage your personal details and account information.")
+    if st.button("← Back to Overview", key="profile_back_to_overview"):
+        st.session_state["active_workspace_page"] = "Overview"
+        st.session_state["workspace_page"] = "Overview"
+        st.rerun()
 
     full_name = " ".join(
         part for part in (
