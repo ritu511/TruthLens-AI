@@ -2281,7 +2281,7 @@ elif page == "Profile":
                 dob = st.date_input(
                     "Date of birth",
                     value=dob_value,
-                    min_value=date(1900, 1, 1),
+                    min_value=date(1970, 1, 1),
                     max_value=date.today(),
                     format="DD/MM/YYYY",
                 )
