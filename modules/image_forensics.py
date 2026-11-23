@@ -1,8 +1,6 @@
-
 import io
+import sys
 from functools import lru_cache
-
-import torch
 
 from PIL import (
     Image,
@@ -11,11 +9,15 @@ from PIL import (
     ImageFilter,
     ImageStat,
     ExifTags,
-    UnidentifiedImageError
+    UnidentifiedImageError,
 )
 
 
-MODEL_NAME = "aaronkantrowitz/ai-human-generated-image-detection"
+# Smaug is the selected open-source detector. Its model card documents an
+# approximately 910 MB download on first use. Hugging Face caches the snapshot
+# after download, so subsequent scans in the same deployment reuse it.
+MODEL_NAME = "abacusai/Smaug-AI-Image-Detector"
+AI_THRESHOLD = 0.50
 
 
 def extract_image_metadata(image):
@@ -26,21 +28,16 @@ def extract_image_metadata(image):
         "width": image.width,
         "height": image.height,
         "mode": image.mode,
-        "exif": {}
+        "exif": {},
     }
 
     try:
         for tag_id, value in image.getexif().items():
-
-            tag_name = ExifTags.TAGS.get(
-                tag_id,
-                str(tag_id)
-            )
-
+            tag_name = ExifTags.TAGS.get(tag_id, str(tag_id))
             if not isinstance(value, bytes):
                 metadata["exif"][tag_name] = str(value)
-
     except Exception:
+        # EXIF data is optional and must not stop the image investigation.
         pass
 
     return metadata
@@ -59,15 +56,15 @@ def analyze_image_quality(image):
         "description": (
             "Edge and texture measurements. "
             "These values do not prove manipulation."
-        )
+        ),
     }
 
 
 def generate_ela(image, quality=90):
-    """
-    Generate Error Level Analysis visualization.
+    """Generate an Error Level Analysis visualization for JPEG files.
 
-    ELA is a visual inspection aid, not proof of manipulation.
+    ELA is a visual inspection aid only. Compression and normal edits can
+    change ELA output, so it is not proof of manipulation.
     """
 
     if image.format != "JPEG":
@@ -75,187 +72,136 @@ def generate_ela(image, quality=90):
 
     original = image.convert("RGB")
     buffer = io.BytesIO()
-
-    original.save(
-        buffer,
-        format="JPEG",
-        quality=quality
-    )
-
+    original.save(buffer, format="JPEG", quality=quality)
     buffer.seek(0)
 
     with Image.open(buffer) as recompressed_image:
         recompressed = recompressed_image.convert("RGB")
 
-    difference = ImageChops.difference(
-        original,
-        recompressed
-    )
-
+    difference = ImageChops.difference(original, recompressed)
     statistics = ImageStat.Stat(difference)
-
-    max_difference = max(
-        max(channel) for channel in statistics.extrema
-    )
+    max_difference = max(max(channel) for channel in statistics.extrema)
 
     if max_difference > 0:
-        difference = ImageEnhance.Brightness(
-            difference
-        ).enhance(255.0 / max_difference)
+        difference = ImageEnhance.Brightness(difference).enhance(
+            255.0 / max_difference
+        )
 
     return difference
 
 
 @lru_cache(maxsize=1)
 def load_ai_classifier():
-    """Load and cache the Hugging Face image classifier."""
+    """Download once, cache, and load the Smaug image detector.
 
-    from transformers import pipeline
+    The model repository supplies SmaugImageDetect and its loading helper.
+    The loader selects a supported device (CUDA, Apple Silicon Metal, or CPU).
+    """
 
-    if torch.backends.mps.is_available():
-        device = torch.device("mps")
-    elif torch.cuda.is_available():
-        device = torch.device("cuda")
-    else:
-        device = torch.device("cpu")
+    from huggingface_hub import snapshot_download
 
-    return pipeline(
-        "image-classification",
-        model=MODEL_NAME,
-        device=device
-    )
+    model_path = str(snapshot_download(repo_id=MODEL_NAME))
+
+    # The detector's Python helper is shipped inside the model snapshot.
+    if model_path not in sys.path:
+        sys.path.insert(0, model_path)
+
+    from smaug_image_detect import SmaugImageDetect
+
+    return SmaugImageDetect.from_pretrained(model_path)
 
 
 def detect_ai_image(image):
-    """
-    Run experimental AI-image classification.
+    """Return Smaug's AI-generated probability for a PIL image.
 
-    Model predictions are indicators, not proof of image origin.
+    The model returns a scalar score in [0, 1]. It is a model estimate, not
+    proof or independently calibrated certainty about image provenance.
     """
 
     try:
         classifier = load_ai_classifier()
+        raw_score = classifier(image.convert("RGB"))
 
-        predictions = classifier(
-            image.convert("RGB")
-        )
+        # The released API returns one scalar. Also accept scalar-like arrays
+        # and one-item containers so wrappers do not break the integration.
+        if isinstance(raw_score, (list, tuple)):
+            if len(raw_score) != 1:
+                raise ValueError("The detector returned an unexpected batch size.")
+            raw_score = raw_score[0]
+        if hasattr(raw_score, "item"):
+            raw_score = raw_score.item()
 
-        if not isinstance(predictions, list):
-            raise ValueError("Unexpected model output.")
+        ai_probability = float(raw_score)
+        if not 0.0 <= ai_probability <= 1.0:
+            raise ValueError("The detector returned a score outside [0, 1].")
 
-        ai_score = 0.0
-        human_score = 0.0
-        ai_label_found = False
-        human_label_found = False
-
-        for item in predictions:
-
-            label = str(item.get("label", "")).lower()
-            score = float(item.get("score", 0.0))
-
-            if not 0 <= score <= 1:
-                continue
-
-            if any(word in label for word in (
-                "ai", "artificial", "fake", "synthetic", "generated"
-            )):
-                ai_score += score
-                ai_label_found = True
-
-            elif any(word in label for word in (
-                "human", "real", "natural", "photograph"
-            )):
-                human_score += score
-                human_label_found = True
-
-        if not ai_label_found or not human_label_found:
-            return {
-                "available": False,
-                "error": (
-                    "The model labels could not be reliably mapped "
-                    "to both AI-generated and human-generated classes."
-                )
-            }
-
+        ai_score = round(ai_probability * 100.0, 2)
+        human_score = round((1.0 - ai_probability) * 100.0, 2)
         prediction = (
             "AI-generated indicators detected"
-            if ai_score > human_score
-            else "Human-generated indicators detected"
+            if ai_probability >= AI_THRESHOLD
+            else "Human-created indicators detected"
         )
 
         return {
             "available": True,
             "prediction": prediction,
-            "ai_score": round(ai_score * 100, 2),
-            "human_score": round(human_score * 100, 2),
+            "ai_score": ai_score,
+            "human_score": human_score,
+            "confidence": round(
+                max(ai_probability, 1.0 - ai_probability) * 100.0, 2
+            ),
             "model": MODEL_NAME,
+            "engine": "Smaug AI Image Detector (local model)",
             "warning": (
-                "Experimental model prediction only. "
-                "It does not prove whether an image is AI-generated "
-                "or human-created. Results may be incorrect, "
-                "especially for edited or compressed images."
-            )
+                "This is a model score, not proof of image origin. Edited, "
+                "cropped, compressed, or newly generated images may be "
+                "misclassified. Review the metadata and other evidence too."
+            ),
         }
 
     except Exception as error:
         return {
             "available": False,
-            "error": str(error)
+            "error": (
+                "Smaug AI Image Detector could not be loaded or run. "
+                "Check that sentence-transformers[image] is installed and "
+                "the host has enough memory and disk space for the model. "
+                f"Details: {error}"
+            ),
         }
 
 
 def analyze_image(image_bytes):
-    """
-    Main image-forensics function.
-
-    Returns a structured result compatible with app.py.
-    """
+    """Main image-forensics function; keeps the existing app.py result shape."""
 
     try:
         if not isinstance(image_bytes, (bytes, bytearray)):
             raise ValueError("Invalid image file data.")
-
         if not image_bytes:
             raise ValueError("The uploaded image is empty.")
 
         with Image.open(io.BytesIO(image_bytes)) as source_image:
-
             source_image.load()
-
-            # Keep original format for metadata and ELA.
             original_format = source_image.format
-
             image = source_image.copy()
             image.format = original_format
 
         metadata = extract_image_metadata(image)
-
         quality = analyze_image_quality(image)
-
         ela_image = generate_ela(image)
-
         ai_detection = detect_ai_image(image)
 
         warnings = []
-
         if not metadata["exif"]:
-            warnings.append(
-                "No EXIF metadata found. It may have been removed."
-            )
-
+            warnings.append("No EXIF metadata found. It may have been removed.")
         if ela_image is None:
-            warnings.append(
-                "ELA is available only for JPEG images."
-            )
-
+            warnings.append("ELA is available only for JPEG images.")
         warnings.append(
-            "AI detection is experimental and cannot prove "
-            "whether an image is AI-generated."
+            "AI detection is a model-based indicator and cannot prove image origin."
         )
-
         warnings.append(
-            "Metadata and image quality measurements are "
-            "indicators, not proof of manipulation."
+            "Metadata, edge measurements and ELA are inspection clues, not proof of manipulation."
         )
 
         return {
@@ -266,17 +212,13 @@ def analyze_image(image_bytes):
             "ela_image": ela_image,
             "ai_detection": ai_detection,
             "file_size_kb": round(len(image_bytes) / 1024, 2),
-            "warnings": warnings
+            "warnings": warnings,
         }
 
     except (UnidentifiedImageError, OSError):
         return {
             "success": False,
-            "error": "The uploaded file is not a valid readable image."
+            "error": "The uploaded file is not a valid readable image.",
         }
-
     except Exception as error:
-        return {
-            "success": False,
-            "error": str(error)
-        }
+        return {"success": False, "error": str(error)}
